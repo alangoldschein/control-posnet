@@ -1,8 +1,3 @@
-bash
-
-cat /home/claude/index_supabase.html
-Salida
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -441,18 +436,27 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
   },[clientId]);
 
   const processFiles=useCallback(async(files)=>{
+    if(!apiKey){setError("Necesitas configurar tu API key de Anthropic primero. Sali, volvé a entrar y configura la key.");return;}
     setLoading(true);setError(null);
+    let added=0;
     for(const file of files){
       if(!file.type.startsWith("image/"))continue;
       try{
         const b64=await fileToBase64(file);
         const ex=await extractFromImage(b64,file.type,apiKey);
+        // Don't save if all zeros - means AI failed to read
+        if(!ex.totalPesos&&!ex.qrDebito&&!ex.credito){
+          setError("No se pudo leer el ticket. Verificá que la foto sea clara y volvé a intentar.");
+          continue;
+        }
         const calc=calcCierre({...ex,comisionPct});
         const dbRow=mapCierre(calc,clientId);
         const res=await db.createCierre(dbRow);
         setCierres(prev=>[calcCierre({...res[0],qr_debito:res[0].qr_debito,total_pesos:res[0].total_pesos,comision_pct:res[0].comision_pct,nroLote:res[0].nro_lote,nroComercio:res[0].nro_comercio}),...prev]);
+        added++;
       }catch(e){setError(`Error: ${e.message}`);}
     }
+    if(added>0)setError(null);
     setLoading(false);
   },[clientId,comisionPct,apiKey]);
 
@@ -480,29 +484,205 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
   </div>);}
 
 // ── Admin View ─────────────────────────────────────────────
+function getMonthKey(fecha){if(!fecha)return"";const[d,m,y]=fecha.split("/");return y&&m?y+"-"+m:"";}
+function getMonthLabel(key){if(!key)return"";const[y,m]=key.split("-");const months=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];return(months[parseInt(m)-1]||m)+" "+y;}
+
+function exportAdminExcel(clients,allCierres,allRetiros,filterMonth){
+  const wb=XLSX.utils.book_new();
+  // Sheet 1: resumen por cliente
+  const h1=["Cliente","Mes","Total Vendido","Comision Tarjetas","Retiros/Pagos","Com. Pagos 0.5%","Total a Cobrar","Ya Acreditado","Pendiente"];
+  const rows=[];
+  const hoyMs=toMs(hoy());
+  const months=new Set();
+  clients.forEach(c=>{(allCierres[c.client_id]||[]).forEach(r=>{if(r.fecha)months.add(getMonthKey(r.fecha));});});
+  const monthList=filterMonth?[filterMonth]:[...months].sort().reverse();
+  monthList.forEach(month=>{
+    clients.forEach(c=>{
+      const cierresMes=(allCierres[c.client_id]||[]).filter(r=>getMonthKey(r.fecha)===month);
+      const retirosMes=(allRetiros[c.client_id]||[]).filter(r=>getMonthKey(r.fecha)===month);
+      const proc=cierresMes.reduce((a,r)=>a+(r.totalPesos||0),0);
+      if(proc===0)return;
+      const com=cierresMes.reduce((a,r)=>a+(r.comisionMonto||0),0);
+      const retiros=retirosMes.reduce((a,r)=>a+(r.monto||0),0);
+      const comPagos=retiros*0.005;
+      const acred=cierresMes.reduce((a,r)=>{
+        const q=r.qrDebito>0&&r.fechaAcredQR&&toMs(r.fechaAcredQR)<=hoyMs?Math.round(r.qrDebito-r.qrDebito*r.comisionPct):0;
+        const cr=r.credito>0&&r.fechaAcredCredito&&toMs(r.fechaAcredCredito)<=hoyMs?Math.round(r.credito-r.credito*r.comisionPct):0;
+        return a+q+cr;
+      },0);
+      const pend=cierresMes.reduce((a,r)=>{
+        const q=r.qrDebito>0&&r.fechaAcredQR&&toMs(r.fechaAcredQR)>hoyMs?Math.round(r.qrDebito-r.qrDebito*r.comisionPct):0;
+        const cr=r.credito>0&&r.fechaAcredCredito&&toMs(r.fechaAcredCredito)>hoyMs?Math.round(r.credito-r.credito*r.comisionPct):0;
+        return a+q+cr;
+      },0);
+      rows.push([c.nombre,getMonthLabel(month),proc,com,retiros,comPagos,com+comPagos,acred,pend]);
+    });
+  });
+  const ws1=XLSX.utils.aoa_to_sheet([h1,...rows]);
+  ws1["!cols"]=h1.map((_,i)=>({wch:i===0?20:i===1?14:18}));
+  XLSX.utils.book_append_sheet(wb,ws1,"Resumen por cliente");
+  // Sheet 2: detalle cierres
+  const h2=["Cliente","Terminal","Fecha","Hora","Lote","QR/Debito","Credito","Total","Comision%","Comision$","Saldo","AcredQR","AcredCred"];
+  const rows2=[];
+  clients.forEach(c=>{
+    const cierresFilt=filterMonth?(allCierres[c.client_id]||[]).filter(r=>getMonthKey(r.fecha)===filterMonth):(allCierres[c.client_id]||[]);
+    cierresFilt.forEach(r=>{rows2.push([c.nombre,r.terminal,r.fecha,r.hora||"",r.nroLote,r.qrDebito,r.credito,r.totalPesos,r.comisionPct,r.comisionMonto,r.saldoNeto,r.fechaAcredQR,r.fechaAcredCredito]);});
+  });
+  const ws2=XLSX.utils.aoa_to_sheet([h2,...rows2]);
+  ws2["!cols"]=h2.map(()=>({wch:14}));
+  XLSX.utils.book_append_sheet(wb,ws2,"Detalle cierres");
+  const label=filterMonth?getMonthLabel(filterMonth):"todos";
+  XLSX.writeFile(wb,`Admin_Posnet_${label.replace(/ /g,"_")}.xlsx`);
+}
+
+function AdminResumen({clients,allCierres,allRetiros,filterMonth,apiKey,onViewClient}){
+  const hoyMs=toMs(hoy());
+  const now=new Date();
+  const currentMonth=filterMonth||(now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0"));
+
+  // Totales generales del mes
+  const totalProcMes=clients.reduce((a,c)=>a+(allCierres[c.client_id]||[]).filter(r=>getMonthKey(r.fecha)===currentMonth).reduce((b,r)=>b+(r.totalPesos||0),0),0);
+  const totalComMes=clients.reduce((a,c)=>a+(allCierres[c.client_id]||[]).filter(r=>getMonthKey(r.fecha)===currentMonth).reduce((b,r)=>b+(r.comisionMonto||0),0),0);
+  const totalRetMes=clients.reduce((a,c)=>a+(allRetiros[c.client_id]||[]).filter(r=>getMonthKey(r.fecha)===currentMonth).reduce((b,r)=>b+(r.monto||0),0),0);
+  const totalComPagosMes=totalRetMes*0.005;
+  const totalAcobrar=totalComMes+totalComPagosMes;
+  const totalAcred=clients.reduce((a,c)=>a+(allCierres[c.client_id]||[]).filter(r=>getMonthKey(r.fecha)===currentMonth).reduce((b,r)=>{
+    const q=r.qrDebito>0&&r.fechaAcredQR&&toMs(r.fechaAcredQR)<=hoyMs?Math.round(r.qrDebito-r.qrDebito*r.comisionPct):0;
+    const cr=r.credito>0&&r.fechaAcredCredito&&toMs(r.fechaAcredCredito)<=hoyMs?Math.round(r.credito-r.credito*r.comisionPct):0;
+    return b+q+cr;
+  },0),0);
+  const totalPend=clients.reduce((a,c)=>a+(allCierres[c.client_id]||[]).filter(r=>getMonthKey(r.fecha)===currentMonth).reduce((b,r)=>{
+    const q=r.qrDebito>0&&r.fechaAcredQR&&toMs(r.fechaAcredQR)>hoyMs?Math.round(r.qrDebito-r.qrDebito*r.comisionPct):0;
+    const cr=r.credito>0&&r.fechaAcredCredito&&toMs(r.fechaAcredCredito)>hoyMs?Math.round(r.credito-r.credito*r.comisionPct):0;
+    return b+q+cr;
+  },0),0);
+
+  return(<div>
+    {/* KPIs top */}
+    <div style={{...card,marginBottom:14,background:"#0f172a"}}>
+      <div style={{fontSize:10,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.07em",fontWeight:600,marginBottom:8}}>{getMonthLabel(currentMonth)} · Tu facturacion</div>
+      <div style={{fontSize:32,fontWeight:800,color:"#22c55e",letterSpacing:"-0.04em",marginBottom:14}}>{fmt(totalAcobrar)}</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+        {[
+          {l:"Com. tarjetas",v:totalComMes,c:"#86efac"},
+          {l:"Com. pagos 0.5%",v:totalComPagosMes,c:"#86efac"},
+          {l:"Ya acreditado",v:totalAcred,c:"#6ee7b7"},
+          {l:"Pendiente",v:totalPend,c:"#fcd34d"},
+        ].map(({l,v,c})=>(<div key={l} style={{background:"rgba(255,255,255,0.05)",borderRadius:8,padding:"8px 10px"}}>
+          <div style={{fontSize:9,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.07em",fontWeight:600,marginBottom:3}}>{l}</div>
+          <div style={{fontWeight:700,color:c,fontSize:14}}>{fmt(v)}</div>
+        </div>))}
+      </div>
+    </div>
+
+    {/* Tabla por cliente */}
+    <div style={{fontSize:11,color:G.hint,textTransform:"uppercase",letterSpacing:"0.07em",fontWeight:600,marginBottom:10}}>Por cliente · {getMonthLabel(currentMonth)}</div>
+    
+    {/* Header tabla */}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 100px 100px 100px 100px",gap:4,padding:"6px 10px",marginBottom:4}}>
+      {["Cliente","Vendido","A cobrar","Acreditado","Pendiente"].map(h=>(
+        <div key={h} style={{fontSize:9,color:G.hint,textTransform:"uppercase",letterSpacing:"0.07em",fontWeight:600,textAlign:h==="Cliente"?"left":"right"}}>{h}</div>
+      ))}
+    </div>
+
+    {clients.map(c=>{
+      const cierresMes=(allCierres[c.client_id]||[]).filter(r=>getMonthKey(r.fecha)===currentMonth);
+      const retirosMes=(allRetiros[c.client_id]||[]).filter(r=>getMonthKey(r.fecha)===currentMonth);
+      const proc=cierresMes.reduce((a,r)=>a+(r.totalPesos||0),0);
+      const com=cierresMes.reduce((a,r)=>a+(r.comisionMonto||0),0);
+      const retiros=retirosMes.reduce((a,r)=>a+(r.monto||0),0);
+      const comPagos=retiros*0.005;
+      const totalCobrar=com+comPagos;
+      const acred=cierresMes.reduce((a,r)=>{
+        const q=r.qrDebito>0&&r.fechaAcredQR&&toMs(r.fechaAcredQR)<=hoyMs?Math.round(r.qrDebito-r.qrDebito*r.comisionPct):0;
+        const cr=r.credito>0&&r.fechaAcredCredito&&toMs(r.fechaAcredCredito)<=hoyMs?Math.round(r.credito-r.credito*r.comisionPct):0;
+        return a+q+cr;
+      },0);
+      const pend=cierresMes.reduce((a,r)=>{
+        const q=r.qrDebito>0&&r.fechaAcredQR&&toMs(r.fechaAcredQR)>hoyMs?Math.round(r.qrDebito-r.qrDebito*r.comisionPct):0;
+        const cr=r.credito>0&&r.fechaAcredCredito&&toMs(r.fechaAcredCredito)>hoyMs?Math.round(r.credito-r.credito*r.comisionPct):0;
+        return a+q+cr;
+      },0);
+      const cantPagos=retirosMes.length;
+      return(<div key={c.client_id} style={{...card,marginBottom:8,padding:"10px 12px",cursor:"pointer"}} onClick={()=>onViewClient(c)}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 100px 100px 100px 100px",gap:4,alignItems:"center",marginBottom:cantPagos>0?8:0}}>
+          <div>
+            <div style={{fontWeight:700,fontSize:13,color:G.text}}>{c.nombre}</div>
+            <div style={{fontSize:10,color:G.muted}}>{cierresMes.length} cierre{cierresMes.length!==1?"s":""} · Com. {(c.comision*100).toFixed(1)}%</div>
+          </div>
+          <div style={{textAlign:"right",fontWeight:600,fontSize:13,color:G.blue}}>{fmt(proc)}</div>
+          <div style={{textAlign:"right",fontWeight:700,fontSize:13,color:G.green}}>{fmt(totalCobrar)}</div>
+          <div style={{textAlign:"right",fontWeight:600,fontSize:13,color:G.green}}>{fmt(acred)}</div>
+          <div style={{textAlign:"right",fontWeight:600,fontSize:13,color:pend>0?G.amber:G.muted}}>{fmt(pend)}</div>
+        </div>
+        {cantPagos>0&&(
+          <div style={{borderTop:"1px solid "+G.borderLight,paddingTop:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{fontSize:11,color:G.muted}}>{cantPagos} pago{cantPagos!==1?"s":""} · Com. 0.5%</span>
+            <span style={{fontSize:11,fontWeight:600,color:G.green}}>{fmt(comPagos)}</span>
+          </div>
+        )}
+      </div>);
+    })}
+
+    {/* Total fila */}
+    <div style={{...card,padding:"10px 12px",background:G.bg,borderStyle:"dashed"}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 100px 100px 100px 100px",gap:4,alignItems:"center"}}>
+        <div style={{fontWeight:700,fontSize:13,color:G.text}}>TOTAL</div>
+        <div style={{textAlign:"right",fontWeight:800,fontSize:13,color:G.blue}}>{fmt(totalProcMes)}</div>
+        <div style={{textAlign:"right",fontWeight:800,fontSize:13,color:G.green}}>{fmt(totalAcobrar)}</div>
+        <div style={{textAlign:"right",fontWeight:800,fontSize:13,color:G.green}}>{fmt(totalAcred)}</div>
+        <div style={{textAlign:"right",fontWeight:800,fontSize:13,color:G.amber}}>{fmt(totalPend)}</div>
+      </div>
+    </div>
+  </div>);}
+
 function AdminView({onLogout,apiKey}){
   const[screen,setScreen]=useState("dash");
   const[selClient,setSelClient]=useState(null);
   const[clients,setClients]=useState([]);
   const[loading,setLoading]=useState(true);
+  const[allCierres,setAllCierres]=useState({});
+  const[allRetiros,setAllRetiros]=useState({});
+  const[activeTab,setActiveTab]=useState("resumen");
+  const[filterMonth,setFilterMonth]=useState("");
   const[nc,setNc]=useState({nombre:"",usuario:"",password:"",comision:"9.5"});
-  const[ncErr,setNcErr]=useState("");const[saving,setSaving]=useState(false);
+  const[ncErr,setNcErr]=useState("");
+  const[saving,setSaving]=useState(false);
 
-  useEffect(()=>{
-    (async()=>{
-      try{const c=await db.getClients();setClients(c||[]);}catch(e){}
-      setLoading(false);
-    })();
-  },[]);
+  const loadData=async()=>{
+    try{
+      const c=await db.getClients();setClients(c||[]);
+      const cm={};const rm={};
+      await Promise.all((c||[]).map(async cl=>{
+        const[cierres,retiros]=await Promise.all([db.getCierres(cl.client_id),db.getRetiros(cl.client_id)]);
+        cm[cl.client_id]=(cierres||[]).map(mapCierreFromDB);
+        rm[cl.client_id]=retiros||[];
+      }));
+      setAllCierres(cm);setAllRetiros(rm);
+    }catch(e){}
+    setLoading(false);
+  };
+
+  useEffect(()=>{loadData();},[]);
+
+  // Build list of available months
+  const allMonths=new Set();
+  clients.forEach(c=>{(allCierres[c.client_id]||[]).forEach(r=>{if(r.fecha)allMonths.add(getMonthKey(r.fecha));});});
+  const monthList=[...allMonths].sort().reverse();
+  const now=new Date();
+  const currentMonth=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
+  const activeMonth=filterMonth||currentMonth;
 
   const addClient=async()=>{
     if(!nc.nombre||!nc.usuario||!nc.password){setNcErr("Completa todos los campos");return;}
     setSaving(true);
     try{
-      const clientId=`cl_${Date.now()}`;
+      const clientId="cl_"+Date.now();
       const data={username:nc.usuario.toLowerCase(),password:nc.password,role:"client",nombre:nc.nombre,comision:parseFloat(nc.comision)/100||0.095,client_id:clientId};
       await db.createUser(data);
       setClients(prev=>[...prev,data]);
+      setAllCierres(prev=>({...prev,[clientId]:[]}));
+      setAllRetiros(prev=>({...prev,[clientId]:[]}));
       setNc({nombre:"",usuario:"",password:"",comision:"9.5"});setNcErr("");setScreen("dash");
     }catch(e){setNcErr("Error: ese usuario ya existe");}
     setSaving(false);
@@ -514,50 +694,88 @@ function AdminView({onLogout,apiKey}){
     setClients(prev=>prev.filter(c=>c.username!==username));
   };
 
+  // When admin views a client, pass admin's apiKey for demo purposes
   if(screen==="detail"&&selClient){
-    return <ClientView clientName={selClient.nombre} comisionPct={selClient.comision} clientId={selClient.client_id} onBack={()=>setScreen("dash")} onLogout={onLogout} apiKey={apiKey}/>;
+    return <ClientView clientName={selClient.nombre} comisionPct={selClient.comision} clientId={selClient.client_id}
+      onBack={()=>{setScreen("dash");loadData();}} onLogout={onLogout} apiKey={apiKey}/>;
   }
 
   if(screen==="newclient")return(<div style={{minHeight:"100vh",background:G.bg}}>
     <div style={topbar}><button onClick={()=>setScreen("dash")} style={{background:"none",border:"none",fontSize:22,color:G.muted,padding:0}}>←</button><div style={{fontWeight:700,fontSize:15,color:G.text}}>Nuevo cliente</div></div>
-    <div style={{maxWidth:460,margin:"28px auto",padding:"0 16px"}}>
-      <div style={card}>
-        {[{label:"Nombre del cliente",key:"nombre",type:"text",ph:"Ej: Restaurante El Sol"},{label:"Usuario",key:"usuario",type:"text",ph:"Ej: elsol"},{label:"Contrasena",key:"password",type:"password",ph:""},{label:"Comision (%)",key:"comision",type:"number",ph:"9.5"}].map(({label,key,type,ph})=>(<div key={key} style={{marginBottom:14}}><label style={{display:"block",fontSize:13,fontWeight:600,color:G.muted,marginBottom:6}}>{label}</label><input type={type} value={nc[key]} placeholder={ph} onChange={e=>setNc(p=>({...p,[key]:e.target.value}))} style={inputSt}/></div>))}
-        {ncErr&&<div style={{background:G.redBg,border:`1px solid ${G.redBorder}`,borderRadius:8,padding:"9px 12px",color:G.redText,fontSize:13,marginBottom:12}}>{ncErr}</div>}
-        <div style={{display:"flex",gap:10}}><button onClick={()=>setScreen("dash")} style={{...btnGhost,flex:1}}>Cancelar</button><button onClick={addClient} disabled={saving} style={{...btnPrimary,flex:1,opacity:saving?0.7:1}}>{saving?"Guardando...":"Crear cliente"}</button></div>
-      </div>
-    </div>
+    <div style={{maxWidth:460,margin:"28px auto",padding:"0 16px"}}><div style={card}>
+      {[{label:"Nombre del cliente",key:"nombre",type:"text",ph:"Ej: Lardo"},{label:"Usuario (login)",key:"usuario",type:"text",ph:"Ej: lardo"},{label:"Contrasena",key:"password",type:"password",ph:""},{label:"Comision (%)",key:"comision",type:"number",ph:"9.5"}].map(({label,key,type,ph})=>(<div key={key} style={{marginBottom:14}}><label style={{display:"block",fontSize:13,fontWeight:600,color:G.muted,marginBottom:6}}>{label}</label><input type={type} value={nc[key]} placeholder={ph} onChange={e=>setNc(p=>({...p,[key]:e.target.value}))} style={inputSt}/></div>))}
+      {ncErr&&<div style={{background:G.redBg,border:"1px solid "+G.redBorder,borderRadius:8,padding:"9px 12px",color:G.redText,fontSize:13,marginBottom:12}}>{ncErr}</div>}
+      <div style={{display:"flex",gap:10}}><button onClick={()=>setScreen("dash")} style={{...btnGhost,flex:1}}>Cancelar</button><button onClick={addClient} disabled={saving} style={{...btnPrimary,flex:1,opacity:saving?0.7:1}}>{saving?"Guardando...":"Crear cliente"}</button></div>
+    </div></div>
   </div>);
 
-  if(loading)return(<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:G.bg}}><div style={{width:32,height:32,border:`3px solid ${G.blue}`,borderTopColor:"transparent",borderRadius:"50%",animation:"spin .8s linear infinite"}}/></div>);
+  if(loading)return(<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:G.bg}}><div style={{width:32,height:32,border:"3px solid "+G.blue,borderTopColor:"transparent",borderRadius:"50%",animation:"spin .8s linear infinite"}}/></div>);
+
+  const TABS=[{id:"resumen",label:"Resumen"},{id:"clientes",label:"Clientes"}];
 
   return(<div style={{minHeight:"100vh",background:G.bg}}>
     <div style={topbar}>
       <div style={{fontWeight:700,fontSize:16,flex:1,color:G.text}}>Panel Admin</div>
+      <button onClick={()=>exportAdminExcel(clients,allCierres,allRetiros,activeMonth!==currentMonth?activeMonth:"")} style={{...btnOutline,fontSize:11,padding:"7px 12px"}}>↓ Excel</button>
       <button onClick={onLogout} style={{...btnGhost,fontSize:12,padding:"8px 12px"}}>Salir</button>
     </div>
     <div style={{maxWidth:720,margin:"0 auto",padding:"20px 16px"}}>
-      <div style={{...card,marginBottom:20,textAlign:"center"}}>
-        <div style={{fontSize:9,color:G.hint,textTransform:"uppercase",letterSpacing:"0.07em",fontWeight:600,marginBottom:6}}>Clientes activos</div>
-        <div style={{fontSize:40,fontWeight:800,color:G.text}}>{clients.length}</div>
-      </div>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-        <h2 style={{fontSize:16,fontWeight:700,color:G.text,margin:0}}>Clientes</h2>
-        <button onClick={()=>setScreen("newclient")} style={{...btnPrimary,fontSize:13,padding:"9px 18px"}}>+ Nuevo</button>
-      </div>
-      {clients.length===0&&(<div style={{textAlign:"center",padding:"48px 0",color:G.hint}}><div style={{fontSize:36,marginBottom:10}}>👥</div><div style={{fontSize:15,fontWeight:600}}>Sin clientes aun</div><div style={{fontSize:13,marginTop:4}}>Crea el primero con el boton de arriba</div></div>)}
-      {clients.map(c=>(<div key={c.username} className="anim" style={{...card,marginBottom:12,borderLeft:`3px solid ${G.blue}`,borderRadius:"0 14px 14px 0"}}>
-        <div style={{marginBottom:12}}>
-          <div style={{fontWeight:700,fontSize:16,color:G.text,marginBottom:2}}>{c.nombre}</div>
-          <div style={{fontSize:12,color:G.muted}}>@{c.username} - Com. {(c.comision*100).toFixed(2)}%</div>
+      <TabBar tabs={TABS} active={activeTab} onChange={setActiveTab}/>
+
+      {activeTab==="resumen"&&(<div>
+        {/* Filtro por mes */}
+        <div style={{display:"flex",gap:8,marginBottom:16,alignItems:"center",flexWrap:"wrap"}}>
+          <div style={{fontSize:12,color:G.muted,fontWeight:500}}>Mes:</div>
+          {[currentMonth,...monthList.filter(m=>m!==currentMonth)].slice(0,6).map(m=>(
+            <button key={m} onClick={()=>setFilterMonth(m===activeMonth?"":m)}
+              style={{padding:"6px 14px",borderRadius:20,border:"none",fontSize:12,fontWeight:600,
+                background:activeMonth===m?G.blue:G.white,color:activeMonth===m?"#fff":G.muted,
+                boxShadow:activeMonth===m?"none":"inset 0 0 0 1px "+G.border}}>
+              {getMonthLabel(m)}
+            </button>
+          ))}
         </div>
-        <div style={{display:"flex",gap:8}}>
-          <button onClick={()=>{setSelClient(c);setScreen("detail");}} style={{...btnPrimary,flex:1,fontSize:13,padding:"10px"}}>Ver cierres</button>
-          <button onClick={()=>deleteClient(c.username)} style={{...btnDanger,padding:"10px 12px"}}>Eliminar</button>
+        <AdminResumen clients={clients} allCierres={allCierres} allRetiros={allRetiros} filterMonth={activeMonth} apiKey={apiKey} onViewClient={c=>{setSelClient(c);setScreen("detail");}}/>
+      </div>)}
+
+      {activeTab==="clientes"&&(<div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+          <h2 style={{fontSize:16,fontWeight:700,color:G.text,margin:0}}>Clientes ({clients.length})</h2>
+          <button onClick={()=>setScreen("newclient")} style={{...btnPrimary,fontSize:13,padding:"9px 18px"}}>+ Nuevo</button>
         </div>
-      </div>))}
+        {clients.length===0&&<div style={{textAlign:"center",padding:"48px 0",color:G.hint}}><div style={{fontSize:36,marginBottom:10}}>👥</div><div style={{fontSize:15,fontWeight:600}}>Sin clientes aun</div></div>}
+        {clients.map(c=>{
+          const cierres=allCierres[c.client_id]||[];
+          const retiros=allRetiros[c.client_id]||[];
+          const totalProc=cierres.reduce((a,r)=>a+(r.totalPesos||0),0);
+          const totalCom=cierres.reduce((a,r)=>a+(r.comisionMonto||0),0);
+          const totalRet=retiros.reduce((a,r)=>a+(r.monto||0),0);
+          const comPagos=totalRet*0.005;
+          return(<div key={c.username} className="anim" style={{...card,marginBottom:10,borderLeft:"3px solid "+G.blue,borderRadius:"0 14px 14px 0"}}>
+            <div style={{marginBottom:10}}>
+              <div style={{fontWeight:700,fontSize:15,color:G.text,marginBottom:2}}>{c.nombre}</div>
+              <div style={{fontSize:12,color:G.muted}}>@{c.username} · Com. {(c.comision*100).toFixed(2)}% · {cierres.length} cierres acumulados</div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
+              <Stat label="Total procesado" value={fmt(totalProc)} color={G.blue}/>
+              <Stat label="Com. tarjetas" value={fmt(totalCom)} color={G.green}/>
+              <Stat label="Pagos realizados" value={fmt(totalRet)} color={G.text}/>
+              <Stat label="Com. pagos 0.5%" value={fmt(comPagos)} color={G.green}/>
+            </div>
+            <div style={{background:G.greenBg,border:"1px solid "+G.greenBorder,borderRadius:8,padding:"8px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <span style={{fontSize:12,fontWeight:600,color:G.greenText}}>Total a cobrar (acumulado)</span>
+              <span style={{fontWeight:800,color:G.greenText,fontSize:15}}>{fmt(totalCom+comPagos)}</span>
+            </div>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>{setSelClient(c);setScreen("detail");}} style={{...btnPrimary,flex:1,fontSize:13,padding:"10px"}}>Ver cierres</button>
+              <button onClick={()=>deleteClient(c.username)} style={{...btnDanger,padding:"10px 12px"}}>Eliminar</button>
+            </div>
+          </div>);
+        })}
+      </div>)}
     </div>
   </div>);}
+
 
 // ── Root ───────────────────────────────────────────────────
 function App(){
@@ -570,6 +788,8 @@ function App(){
     setApiKeyRaw(sGet("pn_apikey_v2")||null);
     setBooting(false);
   },[]);
+  // Admin always uses their own apiKey (for demos)
+  // Clients use their own apiKey stored in their browser
 
   if(booting)return(<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:G.bg}}><div style={{width:32,height:32,border:`3px solid ${G.blue}`,borderTopColor:"transparent",borderRadius:"50%",animation:"spin .8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
 
