@@ -139,7 +139,7 @@ function mapCierre(r, clientId){
 function sGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch{return null}}
 function sSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 
-async function extractFromImage(base64,mediaType,apiKey){
+async function extractFromImage(base64,mediaType,apiKey){apiKey=apiKey||ANTHROPIC_API_KEY;
   const resp=await fetch("https://api.anthropic.com/v1/messages",{
     method:"POST",
     headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
@@ -438,14 +438,14 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
   },[clientId]);
 
   const processFiles=useCallback(async(files)=>{
-    if(!apiKey){setError("Necesitas configurar tu API key de Anthropic primero. Sali, volvé a entrar y configura la key.");return;}
+    if(!apiKey&&!ANTHROPIC_API_KEY){setError("Error: no hay API key configurada.");return;}const effectiveKey=apiKey||ANTHROPIC_API_KEY;
     setLoading(true);setError(null);
     let added=0;
     for(const file of files){
       if(!file.type.startsWith("image/"))continue;
       try{
         const b64=await fileToBase64(file);
-        const ex=await extractFromImage(b64,file.type,apiKey);
+        const ex=await extractFromImage(b64,file.type,effectiveKey);
         // Don't save if all zeros - means AI failed to read
         if(!ex.totalPesos&&!ex.qrDebito&&!ex.credito){
           setError("No se pudo leer el ticket. Verificá que la foto sea clara y volvé a intentar.");
