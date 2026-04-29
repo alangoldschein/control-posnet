@@ -785,7 +785,7 @@ function App(){
   const saveApiKey=useCallback(k=>{setApiKeyRaw(k);sSet("pn_apikey_v2",k);},[]);
 
   useEffect(()=>{
-    setApiKeyRaw(sGet("pn_apikey_v2")||null);
+    setApiKeyRaw(sGet("pn_apikey_v2")||"sk-ant-api03-vRr...ywAA");
     setBooting(false);
   },[]);
   // Admin always uses their own apiKey (for demos)
@@ -793,7 +793,7 @@ function App(){
 
   if(booting)return(<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:G.bg}}><div style={{width:32,height:32,border:`3px solid ${G.blue}`,borderTopColor:"transparent",borderRadius:"50%",animation:"spin .8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
 
-  if(!apiKey)return <ApiKeyScreen onSave={saveApiKey}/>;
+  if(!apiKey)return null;
   if(!session)return <Login onLogin={(u,role,cid,nombre,comision)=>setSession({u,role,cid,nombre,comision})}/>;
 
   if(session.role==="admin")return <AdminView onLogout={()=>setSession(null)} apiKey={apiKey}/>;
