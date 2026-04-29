@@ -67,6 +67,8 @@ const db = {
   getRetiros: (clientId) => supaFetch(`/retiros?client_id=eq.${encodeURIComponent(clientId)}&select=*&order=fecha.desc`),
   createRetiro: (data) => supaFetch(`/retiros`, { method: "POST", prefer: "return=representation", body: JSON.stringify(data) }),
   deleteRetiro: (id) => supaFetch(`/retiros?id=eq.${id}`, { method: "DELETE" }),
+  getApiKey: (username) => supaFetch(`/users?username=eq.${encodeURIComponent(username)}&select=api_key`),
+  saveApiKey: (username, apiKey) => supaFetch(`/users?username=eq.${encodeURIComponent(username)}`, { method: "PATCH", prefer: "return=representation", body: JSON.stringify({api_key: apiKey}) }),
 };
 
 // ── Utils ─────────────────────────────────────────────────
@@ -145,7 +147,7 @@ async function extractFromImage(base64,mediaType,apiKey){
       model:"claude-sonnet-4-6",max_tokens:600,
       messages:[{role:"user",content:[
         {type:"image",source:{type:"base64",media_type:mediaType,data:base64}},
-        {type:"text",text:`Lee este ticket de cierre de lote de posnet argentino. Responde SOLO con JSON valido sin texto extra:\n{"terminal":"numero de terminal","fecha":"DD/MM/YYYY","hora":"HH:MM:SS","nroLote":"numero de lote","nroComercio":"numero si aparece","qrDebito":numero,"credito":numero,"totalPesos":numero}\n- hora: del encabezado del ticket\n- qrDebito: suma VISA DEBITO + MASTERCARD PREPAGO + QR\n- credito: MASTERCARD + VISA credito + AMEX\n- totalPesos: TOTALES EN PESOS\n- Numeros sin simbolos. Campos ausentes = 0 o "".`}
+        {type:"text",text:`Lee este ticket de cierre de lote de posnet argentino. Responde SOLO con JSON valido sin texto extra:\n{\"terminal\":\"numero de terminal\",\"fecha\":\"DD/MM/YYYY\",\"hora\":\"HH:MM:SS\",\"nroLote\":\"numero de lote\",\"nroComercio\":\"numero si aparece\",\"qrDebito\":numero,\"credito\":numero,\"totalPesos\":numero}\n- hora: del encabezado del ticket\n- qrDebito: suma VISA DEBITO + MASTERCARD PREPAGO + QR + TRANSFERENCIA INMEDIATA (todo lo que diga debito, prepago o transferencia)\n- credito: MASTERCARD credito + VISA credito + AMEX (excluir debito/prepago/transferencia)\n- totalPesos: TOTALES EN PESOS (linea Co 0XX al final)\n- Numeros sin $ ni puntos de miles. Campos ausentes = 0 o \"\".`}
       ]}]
     })
   });
@@ -215,7 +217,7 @@ function ApiKeyScreen({onSave}){
       <div style={{textAlign:"center",marginBottom:28}}>
         <div style={{width:52,height:52,background:G.blue,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px",fontSize:24}}>🔑</div>
         <h1 style={{fontSize:20,fontWeight:800,color:G.text,margin:"0 0 6px"}}>Configuracion inicial</h1>
-        <p style={{color:G.muted,fontSize:14,margin:0}}>Necesitas una API key de Anthropic para leer las fotos</p>
+        <p style={{color:G.muted,fontSize:14,margin:0}}>Solo la necesitás configurar una vez — queda guardada para siempre</p>
       </div>
       <div style={{...card,marginBottom:14}}>
         <div style={{marginBottom:14}}>
@@ -778,30 +780,26 @@ function AdminView({onLogout,apiKey}){
 
 
 // ── Root ───────────────────────────────────────────────────
+// API KEY - reemplaza con tu key de Anthropic
+const ANTHROPIC_API_KEY = "sk-ant-api03-vRr...ywAA";
+
 function App(){
   const[session,setSession]=useState(null);
-  const[apiKey,setApiKeyRaw]=useState(null);
   const[booting,setBooting]=useState(true);
-  const saveApiKey=useCallback(k=>{setApiKeyRaw(k);sSet("pn_apikey_v2",k);},[]);
 
-  useEffect(()=>{
-    setApiKeyRaw(sGet("pn_apikey_v2")||"sk-ant-api03-vRr...ywAA");
-    setBooting(false);
-  },[]);
-  // Admin always uses their own apiKey (for demos)
-  // Clients use their own apiKey stored in their browser
+  useEffect(()=>{setBooting(false);},[]);
 
   if(booting)return(<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:G.bg}}><div style={{width:32,height:32,border:`3px solid ${G.blue}`,borderTopColor:"transparent",borderRadius:"50%",animation:"spin .8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
 
-  if(!apiKey)return null;
   if(!session)return <Login onLogin={(u,role,cid,nombre,comision)=>setSession({u,role,cid,nombre,comision})}/>;
 
-  if(session.role==="admin")return <AdminView onLogout={()=>setSession(null)} apiKey={apiKey}/>;
+  if(session.role==="admin")return <AdminView onLogout={()=>setSession(null)} apiKey={ANTHROPIC_API_KEY}/>;
 
-  return <ClientView clientName={session.nombre} comisionPct={session.comision} clientId={session.cid} onBack={null} onLogout={()=>setSession(null)} apiKey={apiKey}/>;
+  return <ClientView clientName={session.nombre} comisionPct={session.comision} clientId={session.cid} onBack={null} onLogout={()=>setSession(null)} apiKey={ANTHROPIC_API_KEY}/>;
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
+
