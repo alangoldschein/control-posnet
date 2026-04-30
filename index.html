@@ -637,7 +637,7 @@ function AdminView({onLogout,apiKey}){
   const[selClient,setSelClient]=useState(null);
   const[screen,setScreen]=useState("dash");
   const[activeMonth,setActiveMonth]=useState("todo");
-  const[newUser,setNewUser]=useState({nombre:"",username:"",password:"",comision:"0.095"});
+  const[newUser,setNewUser]=useState({nombre:"",username:"",password:"",comision:"0.095",proveedor:""});
   const[loading,setLoading]=useState(false);
 
   const loadData=useCallback(async()=>{
@@ -733,17 +733,32 @@ function AdminView({onLogout,apiKey}){
                   <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"8px 14px",background:G.bg,fontSize:11,color:G.muted,fontWeight:600,textTransform:"uppercase"}}>
                     {["CLIENTE","VENDIDO","A COBRAR","CIERRES"].map(h=><div key={h}>{h}</div>)}
                   </div>
-                  {byClient.map(c=>(
-                    <div key={c.username} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"12px 14px",borderTop:`1px solid ${G.border}`,alignItems:"center"}}>
-                      <div>
-                        <div style={{fontWeight:600,fontSize:14,cursor:"pointer",color:G.blue}} onClick={()=>{setSelClient(c);setScreen("detail");}}>{c.nombre||c.username}</div>
-                        <div style={{fontSize:11,color:G.muted}}>Com. {((c.comision||0.095)*100).toFixed(1)}%</div>
-                      </div>
-                      <div style={{fontWeight:600,color:G.blue,fontSize:13}}>{fmt(c.vendido)}</div>
-                      <div style={{fontWeight:600,color:G.green,fontSize:13}}>{fmt(c.aCobrar)}</div>
-                      <div style={{fontSize:13,color:G.muted}}>{c.cierresCount}</div>
-                    </div>
-                  ))}
+                  {(()=>{
+                    const provs=[...new Set(byClient.map(c=>c.proveedor||""))].sort((a,b)=>a===''?1:b===''?-1:a.localeCompare(b));
+                    return provs.map(prov=>{
+                      const grupo=byClient.filter(c=>(c.proveedor||"")===prov);
+                      if(!grupo.length)return null;
+                      return(
+                        <div key={prov||"x"}>
+                          {prov&&<div style={{padding:"6px 14px",background:"#f1f5f9",borderTop:`1px solid ${G.border}`,display:"flex",justifyContent:"space-between"}}>
+                            <span style={{fontSize:10,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:".05em"}}>📦 {prov}</span>
+                            <span style={{fontSize:11,fontWeight:700,color:G.green}}>{fmt(grupo.reduce((a,c)=>a+c.aCobrar,0))}</span>
+                          </div>}
+                          {grupo.map(c=>(
+                            <div key={c.username} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"12px 14px",borderTop:`1px solid ${G.border}`,alignItems:"center"}}>
+                              <div>
+                                <div style={{fontWeight:600,fontSize:14,cursor:"pointer",color:G.blue}} onClick={()=>{setSelClient(c);setScreen("detail");}}>{c.nombre||c.username}</div>
+                                <div style={{fontSize:11,color:G.muted}}>Com. {((c.comision||0.095)*100).toFixed(1)}%{c.proveedor?" · "+c.proveedor:""}</div>
+                              </div>
+                              <div style={{fontWeight:600,color:G.blue,fontSize:13}}>{fmt(c.vendido)}</div>
+                              <div style={{fontWeight:600,color:G.green,fontSize:13}}>{fmt(c.aCobrar)}</div>
+                              <div style={{fontSize:13,color:G.muted}}>{c.cierresCount}</div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    });
+                  })()}}
                   <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"12px 14px",borderTop:`2px solid ${G.border}`,background:G.bg}}>
                     <div style={{fontWeight:700}}>TOTAL</div>
                     <div style={{fontWeight:700,color:G.blue,fontSize:13}}>{fmt(byClient.reduce((a,c)=>a+c.vendido,0))}</div>
@@ -759,7 +774,7 @@ function AdminView({onLogout,apiKey}){
           <div>
             <div style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:12,padding:16,marginBottom:16}}>
               <div style={{fontWeight:600,marginBottom:12}}>+ Nuevo cliente</div>
-              {[["Nombre completo","nombre","text"],["Usuario","username","text"],["Contraseña","password","text"],["Comisión (ej: 0.095)","comision","number"]].map(([label,key,type])=>(
+              {[["Nombre completo","nombre","text"],["Usuario","username","text"],["Contraseña","password","text"],["Comisión (ej: 0.095)","comision","number"],["Proveedor (ej: Fran, Mario)","proveedor","text"]].map(([label,key,type])=>(
                 <div key={key} style={{marginBottom:8}}>
                   <label style={{fontSize:12,color:G.muted,display:"block",marginBottom:2}}>{label}</label>
                   <input type={type} value={newUser[key]} onChange={e=>setNewUser({...newUser,[key]:e.target.value})} style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:14}}/>
@@ -767,8 +782,8 @@ function AdminView({onLogout,apiKey}){
               ))}
               <button onClick={async()=>{
                 if(!newUser.username||!newUser.password)return;
-                await db.createUser({username:newUser.username,password:newUser.password,role:"client",nombre:newUser.nombre||newUser.username,comision:parseFloat(newUser.comision)||0.095,client_id:newUser.username});
-                setNewUser({nombre:"",username:"",password:"",comision:"0.095"});loadData();
+                await db.createUser({username:newUser.username,password:newUser.password,role:"client",nombre:newUser.nombre||newUser.username,comision:parseFloat(newUser.comision)||0.095,client_id:newUser.username,proveedor:newUser.proveedor||""});
+                setNewUser({nombre:"",username:"",password:"",comision:"0.095",proveedor:""});loadData();
               }} style={{background:G.blue,color:"#fff",border:"none",borderRadius:8,padding:"8px 16px",fontSize:14,fontWeight:600}}>Crear cliente</button>
             </div>
             {clients.map(c=>(
