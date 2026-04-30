@@ -321,7 +321,7 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
             <div style={{fontSize:13}}>Subí las fotos de los tickets para comenzar</div>
           </div>
         )}
-        {clientTab==="cierres"&&<div style={{marginTop:16,borderTop:`1px solid ${G.border}`,paddingTop:16}}>
+        {clientTab==="cierres"&&(<div style={{marginTop:16,borderTop:`1px solid ${G.border}`,paddingTop:16}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
             <span style={{fontWeight:600,fontSize:14}}>Retiros / Pagos</span>
             <button onClick={()=>setShowRetiro(!showRetiro)} style={{fontSize:13,background:G.blueBg,color:G.blue,border:`1px solid ${G.blueBorder}`,borderRadius:8,padding:"4px 10px"}}>+ Agregar</button>
