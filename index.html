@@ -170,6 +170,7 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
   const[showRetiro,setShowRetiro]=useState(false);
   const[retiroMonto,setRetiroMonto]=useState("");
   const[retiroDesc,setRetiroDesc]=useState("");
+  const[retiroFecha,setRetiroFecha]=useState("");
   const hoyMs=new Date().getTime();
 
   const rows=[];
@@ -178,13 +179,15 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
       const com=Math.round(c.qrDebito*c.comisionPct);
       rows.push({id:`qr-${c.id}`,fecha:c.fechaAcredQR,ms:toMs(c.fechaAcredQR),tipo:"qr",
         label:"QR / Débito",importe:c.qrDebito,com,saldoNeto:c.qrDebito-com,
-        origen:`Lote ${c.nroLote||""} del ${c.fecha}`});
+        terminal:c.terminal,nroLote:c.nroLote,fechaCierre:c.fecha,
+        origen:`Lote ${c.nroLote||""} · Cierre ${c.fecha}`});
     }
     if(c.credito>0&&c.fechaAcredCredito){
       const com=Math.round(c.credito*c.comisionPct);
       rows.push({id:`cred-${c.id}`,fecha:c.fechaAcredCredito,ms:toMs(c.fechaAcredCredito),tipo:"credito",
         label:"Crédito",importe:c.credito,com,saldoNeto:c.credito-com,
-        origen:`Lote ${c.nroLote||""} del ${c.fecha}`});
+        terminal:c.terminal,nroLote:c.nroLote,fechaCierre:c.fecha,
+        origen:`Lote ${c.nroLote||""} · Cierre ${c.fecha}`});
     }
   });
   retiros.forEach(r=>{
@@ -253,17 +256,26 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
                 </div>
               </div>
               {/* Footer */}
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:10,borderTop:`1px solid ${isPast?c.border:G.border}`}}>
-                <div style={{fontSize:11,color:G.muted}}>{r.origen}</div>
-                <div style={{display:"flex",gap:12,alignItems:"center"}}>
-                  <div style={{textAlign:"right"}}>
-                    <div style={{fontSize:10,color:G.muted,textTransform:"uppercase",letterSpacing:"0.04em"}}>Neto</div>
-                    <div style={{fontSize:13,fontWeight:700,color:isPast?c.dot:G.muted}}>{fmt(r.saldoNeto)}</div>
+              <div style={{paddingTop:10,borderTop:`1px solid ${isPast?c.border:G.border}`}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end"}}>
+                  <div>
+                    {r.origen&&<div style={{fontSize:11,color:G.muted,marginBottom:2}}>{r.origen}</div>}
+                    {r.terminal&&<div style={{fontSize:11,color:G.muted}}>Terminal: <strong>{r.terminal}</strong></div>}
+                    <div style={{fontSize:11,color:G.muted,marginTop:2}}>
+                      Importe bruto: <strong>{fmt(r.importe)}</strong>
+                      {r.com>0&&<span> · Comisión: <strong style={{color:G.red}}>-{fmt(r.com)}</strong></span>}
+                    </div>
                   </div>
-                  <div style={{width:1,height:28,background:isPast?c.border:G.border}}/>
-                  <div style={{textAlign:"right"}}>
-                    <div style={{fontSize:10,color:G.muted,textTransform:"uppercase",letterSpacing:"0.04em"}}>Saldo acum.</div>
-                    <div style={{fontSize:13,fontWeight:700,color:r.acum>=0?G.green:G.red}}>{fmt(r.acum)}</div>
+                  <div style={{display:"flex",gap:12,alignItems:"center"}}>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontSize:10,color:G.muted,textTransform:"uppercase",letterSpacing:"0.04em"}}>Neto</div>
+                      <div style={{fontSize:13,fontWeight:700,color:isPast?c.dot:G.muted}}>{fmt(r.saldoNeto)}</div>
+                    </div>
+                    <div style={{width:1,height:28,background:isPast?c.border:G.border}}/>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontSize:10,color:G.muted,textTransform:"uppercase",letterSpacing:"0.04em"}}>Saldo acum.</div>
+                      <div style={{fontSize:13,fontWeight:700,color:r.acum>=0?G.green:G.red}}>{fmt(r.acum)}</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -281,7 +293,16 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
           <div style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:10,padding:12,marginBottom:10}}>
             <input type="number" placeholder="Monto" value={retiroMonto} onChange={e=>setRetiroMonto(e.target.value)} style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:14,marginBottom:8}}/>
             <input placeholder="Descripcion (opcional)" value={retiroDesc} onChange={e=>setRetiroDesc(e.target.value)} style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:14,marginBottom:8}}/>
-            <button onClick={async()=>{if(!retiroMonto)return;await db.createRetiro({client_id:clientId,fecha:hoy(),monto:parseFloat(retiroMonto),descripcion:retiroDesc});setRetiroMonto("");setRetiroDesc("");setShowRetiro(false);load();}} style={{background:G.blue,color:"#fff",border:"none",borderRadius:6,padding:"7px 14px",fontSize:13,fontWeight:600}}>Guardar</button>
+            <div style={{marginBottom:8}}>
+              <label style={{fontSize:11,color:G.muted,display:"block",marginBottom:3}}>Fecha del retiro</label>
+              <input type="date" value={retiroFecha} onChange={e=>setRetiroFecha(e.target.value)} style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:14}}/>
+            </div>
+            <button onClick={async()=>{
+              if(!retiroMonto)return;
+              const fechaFinal=retiroFecha?retiroFecha.split("-").reverse().join("/"):hoy();
+              await db.createRetiro({client_id:clientId,fecha:fechaFinal,monto:parseFloat(retiroMonto),descripcion:retiroDesc});
+              setRetiroMonto("");setRetiroDesc("");setRetiroFecha("");setShowRetiro(false);load();
+            }} style={{background:G.blue,color:"#fff",border:"none",borderRadius:6,padding:"7px 14px",fontSize:13,fontWeight:600}}>Guardar</button>
           </div>
         )}
         {retiros.map(r=>(
@@ -324,6 +345,9 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
         const b64=await fileToBase64(file);
         const ex=await extractFromImage(b64,file.type,apiKey);
         if(!ex||(!ex.totalPesos&&!ex.qrDebito&&!ex.credito)){setError("No se pudo leer el ticket. Verificá que la foto sea clara.");continue;}
+        // Check for duplicates
+        const existing=cierres.find(c=>c.nroLote&&ex.nroLote&&c.nroLote===ex.nroLote&&c.terminal===ex.terminal&&c.fecha===ex.fecha);
+        if(existing){setError(`⚠️ El ticket del lote ${ex.nroLote} (${ex.fecha}) ya fue cargado. Verificá que no sea duplicado.`);continue;}
         const cierre=calcCierre({...ex,fecha:ex.fecha||hoy(),comision_pct:comisionPct||0.095});
         await db.createCierre(mapCierre(cierre,clientId));
         added++;
