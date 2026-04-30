@@ -157,10 +157,10 @@ function Login({onLogin}){
   );
 }
 
-function exportCuentaExcel(rows,clientName){
+function exportCuentaExcel(rows, clientName){
   const wb=XLSX.utils.book_new();
-  const data=[["Fecha Acreditacion","Tipo","Importe","Comision","Saldo Neto","Saldo Acumulado","Origen"]];
-  rows.forEach(r=>data.push([r.fecha,r.label,r.importe,r.com>0?-r.com:"",r.saldoNeto,r.acum,r.origen||""]));
+  const data=[["Fecha Acred.","Tipo","Importe","Comision","Saldo Neto","Saldo Acumulado","Lote","Fecha Cierre","Terminal"]];
+  rows.forEach(r=>data.push([r.fecha,r.label,r.importe>0?r.importe:-r.importe,r.com>0?-r.com:"",r.saldoNeto,r.acum,r.nroLote||"",r.fechaCierre||"",r.terminal||""]));
   const ws=XLSX.utils.aoa_to_sheet(data);
   XLSX.utils.book_append_sheet(wb,ws,"Cuenta Corriente");
   XLSX.writeFile(wb,`${clientName}_cuenta_corriente.xlsx`);
@@ -171,128 +171,209 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
   const[retiroMonto,setRetiroMonto]=useState("");
   const[retiroDesc,setRetiroDesc]=useState("");
   const[retiroFecha,setRetiroFecha]=useState("");
+  const[expanded,setExpanded]=useState(null);
+  const[periodoFiltro,setPeriodoFiltro]=useState("todo");
   const hoyMs=new Date().getTime();
 
-  const rows=[];
+  // Build all rows by fecha de acreditacion
+  const allRows=[];
   sortCierres(cierres).forEach(c=>{
     if(c.qrDebito>0&&c.fechaAcredQR){
       const com=Math.round(c.qrDebito*c.comisionPct);
-      rows.push({id:`qr-${c.id}`,fecha:c.fechaAcredQR,ms:toMs(c.fechaAcredQR),tipo:"qr",
-        label:"QR / Débito",importe:c.qrDebito,com,saldoNeto:c.qrDebito-com,
-        terminal:c.terminal,nroLote:c.nroLote,fechaCierre:c.fecha,
-        origen:`Lote ${c.nroLote||""} · Cierre ${c.fecha}`});
+      allRows.push({id:`qr-${c.id}`,fecha:c.fechaAcredQR,ms:toMs(c.fechaAcredQR),tipo:"qr",label:"QR / Débito",
+        importe:c.qrDebito,com,saldoNeto:c.qrDebito-com,
+        nroLote:c.nroLote,fechaCierre:c.fecha,terminal:c.terminal});
     }
     if(c.credito>0&&c.fechaAcredCredito){
       const com=Math.round(c.credito*c.comisionPct);
-      rows.push({id:`cred-${c.id}`,fecha:c.fechaAcredCredito,ms:toMs(c.fechaAcredCredito),tipo:"credito",
-        label:"Crédito",importe:c.credito,com,saldoNeto:c.credito-com,
-        terminal:c.terminal,nroLote:c.nroLote,fechaCierre:c.fecha,
-        origen:`Lote ${c.nroLote||""} · Cierre ${c.fecha}`});
+      allRows.push({id:`cred-${c.id}`,fecha:c.fechaAcredCredito,ms:toMs(c.fechaAcredCredito),tipo:"credito",label:"Crédito",
+        importe:c.credito,com,saldoNeto:c.credito-com,
+        nroLote:c.nroLote,fechaCierre:c.fecha,terminal:c.terminal});
     }
   });
   retiros.forEach(r=>{
-    rows.push({id:`ret-${r.id}`,fecha:r.fecha,ms:toMs(r.fecha),tipo:"retiro",
-      label:r.descripcion||"Retiro/Pago",importe:-r.monto,com:0,saldoNeto:-r.monto,
-      origen:"",retiroId:r.id});
+    allRows.push({id:`ret-${r.id}`,fecha:r.fecha,ms:toMs(r.fecha),tipo:"retiro",label:r.descripcion||"Retiro/Pago",
+      importe:-r.monto,com:0,saldoNeto:-r.monto,retiroId:r.id});
   });
-  rows.sort((a,b)=>a.ms-b.ms);
+  allRows.sort((a,b)=>a.ms-b.ms);
+
+  // Get unique months for filter
+  const meses=["Todo"];
+  allRows.forEach(r=>{
+    const[d,m,y]=r.fecha.split("/");
+    const mes=new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"});
+    if(!meses.includes(mes))meses.push(mes);
+  });
+
+  // Filter rows by period
+  const filteredRows=periodoFiltro==="todo"?allRows:allRows.filter(r=>{
+    const[d,m,y]=r.fecha.split("/");
+    return new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"})===periodoFiltro;
+  });
+
+  // Calculate acum on filtered rows
   let acum=0;
-  const rowsA=rows.map(r=>{acum+=r.saldoNeto;return{...r,acum};});
+  const rows=filteredRows.map(r=>{acum+=r.saldoNeto;return{...r,acum};});
+
+  // Cuadro numbers
+  const totalBruto=rows.filter(r=>r.tipo!=="retiro").reduce((a,r)=>a+r.importe,0);
+  const totalCom=rows.filter(r=>r.tipo!=="retiro").reduce((a,r)=>a+r.com,0);
+  const totalNeto=totalBruto-totalCom;
+  const totalRetiros=Math.abs(rows.filter(r=>r.tipo==="retiro").reduce((a,r)=>a+r.importe,0));
+  const saldoFinal=totalNeto-totalRetiros;
+  const saldoTabla=rows.length>0?rows[rows.length-1].acum:0;
+  const cuadra=Math.abs(saldoFinal-saldoTabla)<1;
 
   const cfg={
-    qr:{bg:"#eff6ff",border:"#bfdbfe",badge:"#dbeafe",badgeText:"#1e40af",dot:"#2563eb",icon:"💳",label:"QR / DÉBITO"},
-    credito:{bg:"#faf5ff",border:"#e9d5ff",badge:"#ede9fe",badgeText:"#5b21b6",dot:"#7c3aed",icon:"💜",label:"CRÉDITO"},
-    retiro:{bg:"#fff1f2",border:"#fecdd3",badge:"#fee2e2",badgeText:"#991b1b",dot:"#e11d48",icon:"💸",label:"RETIRO"},
+    qr:{label:"QR / Débito",color:"#1d4ed8",bg:"#dbeafe",icon:"💳"},
+    credito:{label:"Crédito",color:"#6d28d9",bg:"#ede9fe",icon:"🟣"},
+    retiro:{label:"Retiro/Pago",color:"#be123c",bg:"#fee2e2",icon:"💸"},
   };
 
   return(
     <div>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <div>
-          <div style={{fontWeight:700,fontSize:16}}>Calendario de cobros</div>
-          <div style={{fontSize:12,color:G.muted,marginTop:2}}>Fechas reales de acreditación bancaria</div>
-        </div>
-        <button onClick={()=>exportCuentaExcel(rowsA,clientName||"cliente")} style={{fontSize:13,background:G.greenBg,color:G.green,border:`1px solid #bbf7d0`,borderRadius:8,padding:"7px 14px",fontWeight:600}}>↓ Excel</button>
+      {/* Filtro de periodo */}
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+        <span style={{fontSize:12,color:G.muted,fontWeight:600}}>Período:</span>
+        {meses.map(m=>(
+          <button key={m} onClick={()=>setPeriodoFiltro(m==="Todo"?"todo":m)}
+            style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${periodoFiltro===(m==="Todo"?"todo":m)?G.blue:G.border}`,
+              background:periodoFiltro===(m==="Todo"?"todo":m)?G.blue:"#fff",
+              color:periodoFiltro===(m==="Todo"?"todo":m)?"#fff":G.muted,
+              fontSize:12,fontWeight:600,cursor:"pointer"}}>
+            {m}
+          </button>
+        ))}
       </div>
 
-      {rowsA.length===0&&(
+      {/* CUADRO */}
+      <div style={{background:G.dark,borderRadius:16,padding:20,marginBottom:20,color:"#fff"}}>
+        <div style={{fontSize:11,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".05em",marginBottom:16}}>
+          CUADRO · {periodoFiltro==="todo"?"Todo el período":periodoFiltro.toUpperCase()}
+        </div>
+
+        {[
+          ["Total acreditado (bruto)","QR/Débito + Crédito",fmt(totalBruto),"#60a5fa",false],
+          ["Comisión financiera","Cobrada por la financiera","-"+fmt(totalCom),"#f87171",false],
+        ].map(([title,sub,val,color])=>(
+          <div key={title} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:"#e2e8f0"}}>{title}</div>
+              <div style={{fontSize:11,color:"#64748b",marginTop:1}}>{sub}</div>
+            </div>
+            <div style={{fontSize:16,fontWeight:700,color}}>{val}</div>
+          </div>
+        ))}
+
+        <div style={{background:"#1e293b",borderRadius:10,padding:"10px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+          <div style={{fontSize:13,fontWeight:700,color:"#e2e8f0"}}>Neto acreditado</div>
+          <div style={{fontSize:16,fontWeight:800,color:"#34d399"}}>{fmt(totalNeto)}</div>
+        </div>
+
+        <div style={{borderTop:"1px solid #1e293b",margin:"10px 0"}}/>
+
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+          <div>
+            <div style={{fontSize:13,fontWeight:600,color:"#e2e8f0"}}>Retiros / Pagos</div>
+            <div style={{fontSize:11,color:"#64748b",marginTop:1}}>{rows.filter(r=>r.tipo==="retiro").length} movimiento(s)</div>
+          </div>
+          <div style={{fontSize:16,fontWeight:700,color:"#f87171"}}>{totalRetiros>0?"-"+fmt(totalRetiros):fmt(0)}</div>
+        </div>
+
+        <div style={{borderTop:"2px solid #334155",margin:"12px 0"}}/>
+
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>Saldo neto acumulado</div>
+            <div style={{fontSize:11,color:"#64748b",marginTop:1}}>= última fila de la tabla</div>
+          </div>
+          <div style={{fontSize:22,fontWeight:900,color:"#34d399"}}>{fmt(saldoFinal)}</div>
+        </div>
+
+        <div style={{marginTop:14,background:cuadra?"#064e3b":"#7f1d1d",borderRadius:8,padding:"8px 12px",display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:14}}>{cuadra?"✅":"⚠️"}</span>
+          <span style={{fontSize:12,color:cuadra?"#6ee7b7":"#fca5a5",fontWeight:600}}>
+            {cuadra?"Cuadro OK — el saldo coincide con el detalle de la tabla":"Diferencia detectada — revisá los datos"}
+          </span>
+        </div>
+      </div>
+
+      {/* Botón Excel */}
+      <div style={{display:"flex",justifyContent:"flex-end",marginBottom:12}}>
+        <button onClick={()=>exportCuentaExcel(rows,clientName||"cliente")}
+          style={{fontSize:13,background:G.greenBg,color:G.green,border:"1px solid #bbf7d0",borderRadius:8,padding:"7px 14px",fontWeight:600,cursor:"pointer"}}>
+          ↓ Excel
+        </button>
+      </div>
+
+      {/* Tabla */}
+      {rows.length===0?(
         <div style={{textAlign:"center",padding:"40px 0",color:G.muted}}>
-          <div style={{fontSize:40,marginBottom:8}}>📅</div>
-          <div style={{fontWeight:600,marginBottom:4}}>Sin acreditaciones</div>
-          <div style={{fontSize:13}}>Cargá cierres para ver el calendario de cobros</div>
+          <div style={{fontSize:36,marginBottom:8}}>📅</div>
+          <div style={{fontWeight:600}}>Sin movimientos en este período</div>
+        </div>
+      ):(
+        <div style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:14,overflow:"hidden",marginBottom:16}}>
+          {/* Header */}
+          <div style={{display:"grid",gridTemplateColumns:"90px 110px 1fr 100px 88px 100px 20px",padding:"10px 14px",background:G.bg,fontSize:10,color:G.muted,fontWeight:700,textTransform:"uppercase",letterSpacing:".04em",gap:6,alignItems:"center"}}>
+            {["Fecha acred.","Tipo","Detalle","Importe","Comisión","Saldo acum.",""].map(h=><div key={h} style={{textAlign:h==="Importe"||h==="Comisión"||h==="Saldo acum."?"right":"left"}}>{h}</div>)}
+          </div>
+
+          {rows.map((r,i)=>{
+            const c=cfg[r.tipo]||cfg.qr;
+            const isPast=r.ms<=hoyMs;
+            const isExp=expanded===r.id;
+            const nextDiff=i<rows.length-1&&rows[i+1].fecha!==r.fecha;
+            return(
+              <div key={r.id}>
+                <div style={{borderTop:`1px solid ${G.border}`}}>
+                  <div onClick={()=>setExpanded(isExp?null:r.id)}
+                    style={{display:"grid",gridTemplateColumns:"90px 110px 1fr 100px 88px 100px 20px",padding:"11px 14px",gap:6,alignItems:"center",cursor:"pointer",background:isExp?"#f8fafc":"#fff",opacity:isPast?1:0.65}}>
+                    <div>
+                      <div style={{fontSize:12,fontWeight:600,color:isPast?G.text:"#94a3b8"}}>{r.fecha}</div>
+                      {!isPast&&<div style={{fontSize:9,color:"#f59e0b",fontWeight:600,marginTop:1}}>⏳ pendiente</div>}
+                    </div>
+                    <div><span style={{fontSize:10,fontWeight:700,padding:"3px 7px",borderRadius:6,background:c.bg,color:c.color,whiteSpace:"nowrap"}}>{c.icon} {c.label}</span></div>
+                    <div style={{fontSize:11,color:G.muted,lineHeight:1.4}}>
+                      {r.nroLote&&<span>Lote {r.nroLote} · {r.fechaCierre}</span>}
+                      {r.label==="Retiro/Pago"&&<span>{r.label}</span>}
+                      {r.terminal&&<span style={{display:"block",color:"#94a3b8"}}>Terminal {r.terminal}</span>}
+                    </div>
+                    <div style={{textAlign:"right",fontSize:13,fontWeight:700,color:r.importe>0?G.text:G.red}}>{r.importe>0?fmt(r.importe):"-"+fmt(-r.importe)}</div>
+                    <div style={{textAlign:"right",fontSize:12,color:r.com>0?G.red:G.muted}}>{r.com>0?"-"+fmt(r.com):"—"}</div>
+                    <div style={{textAlign:"right",fontSize:13,fontWeight:800,color:r.acum>=0?G.green:G.red}}>{fmt(r.acum)}</div>
+                    <div style={{textAlign:"right",fontSize:11,color:G.muted}}>{isExp?"▲":"▼"}</div>
+                  </div>
+                  {isExp&&(
+                    <div style={{background:"#f8fafc",borderTop:`1px solid ${G.border}`,padding:"12px 14px 14px 20px"}}>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+                        {r.nroLote&&<div><div style={{fontSize:10,color:G.muted,textTransform:"uppercase",marginBottom:2}}>Nro. Lote</div><div style={{fontSize:13,fontWeight:600}}>{r.nroLote}</div></div>}
+                        {r.fechaCierre&&<div><div style={{fontSize:10,color:G.muted,textTransform:"uppercase",marginBottom:2}}>Fecha cierre</div><div style={{fontSize:13,fontWeight:600}}>{r.fechaCierre}</div></div>}
+                        {r.terminal&&<div><div style={{fontSize:10,color:G.muted,textTransform:"uppercase",marginBottom:2}}>Terminal</div><div style={{fontSize:13,fontWeight:600}}>{r.terminal}</div></div>}
+                        <div><div style={{fontSize:10,color:G.muted,textTransform:"uppercase",marginBottom:2}}>Importe bruto</div><div style={{fontSize:13,fontWeight:600}}>{fmt(r.importe>0?r.importe:-r.importe)}</div></div>
+                        {r.com>0&&<div><div style={{fontSize:10,color:G.muted,textTransform:"uppercase",marginBottom:2}}>Comisión</div><div style={{fontSize:13,fontWeight:600,color:G.red}}>-{fmt(r.com)}</div></div>}
+                        <div><div style={{fontSize:10,color:G.muted,textTransform:"uppercase",marginBottom:2}}>Neto</div><div style={{fontSize:14,fontWeight:800,color:r.saldoNeto>=0?G.green:G.red}}>{fmt(r.saldoNeto)}</div></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {nextDiff&&<div style={{height:4,background:G.bg}}/>}
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {rowsA.map((r,i)=>{
-        const isPast=r.ms<=hoyMs;
-        const isHoy=r.fecha===hoy();
-        const c=cfg[r.tipo]||cfg.qr;
-        return(
-          <div key={r.id} className="anim" style={{
-            background:isPast?c.bg:"#f8fafc",
-            border:`1.5px solid ${isPast?c.border:G.border}`,
-            borderRadius:14,marginBottom:10,overflow:"hidden",
-            boxShadow:isHoy?"0 0 0 2px #fbbf24":"none"
-          }}>
-            <div style={{padding:"14px 16px"}}>
-              {/* Header */}
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-                <div style={{display:"flex",alignItems:"center",gap:8}}>
-                  <div style={{width:36,height:36,borderRadius:10,background:isPast?c.dot:"#e2e8f0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>
-                    {isPast?c.icon:"⏳"}
-                  </div>
-                  <div>
-                    <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-                      <span style={{fontSize:11,fontWeight:700,letterSpacing:"0.05em",color:isPast?c.dot:"#94a3b8",textTransform:"uppercase"}}>{c.label}</span>
-                      {isHoy&&<span style={{fontSize:9,background:"#fef08a",color:"#713f12",borderRadius:4,padding:"1px 6px",fontWeight:700}}>HOY</span>}
-                      {!isPast&&!isHoy&&<span style={{fontSize:9,background:"#fef3c7",color:"#92400e",borderRadius:4,padding:"1px 6px",fontWeight:600}}>PENDIENTE</span>}
-                    </div>
-                    <div style={{fontSize:12,color:G.muted}}>Acredita el <strong style={{color:isPast?G.text:"#94a3b8"}}>{r.fecha}</strong></div>
-                  </div>
-                </div>
-                <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:20,fontWeight:800,color:isPast?c.dot:G.muted}}>{r.importe>0?fmt(r.importe):"-"+fmt(-r.importe)}</div>
-                  {r.com>0&&<div style={{fontSize:11,color:G.red}}>-{fmt(r.com)} comisión</div>}
-                </div>
-              </div>
-              {/* Footer */}
-              <div style={{paddingTop:10,borderTop:`1px solid ${isPast?c.border:G.border}`}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end"}}>
-                  <div>
-                    {r.origen&&<div style={{fontSize:11,color:G.muted,marginBottom:2}}>{r.origen}</div>}
-                    {r.terminal&&<div style={{fontSize:11,color:G.muted}}>Terminal: <strong>{r.terminal}</strong></div>}
-                    <div style={{fontSize:11,color:G.muted,marginTop:2}}>
-                      Importe bruto: <strong>{fmt(r.importe)}</strong>
-                      {r.com>0&&<span> · Comisión: <strong style={{color:G.red}}>-{fmt(r.com)}</strong></span>}
-                    </div>
-                  </div>
-                  <div style={{display:"flex",gap:12,alignItems:"center"}}>
-                    <div style={{textAlign:"right"}}>
-                      <div style={{fontSize:10,color:G.muted,textTransform:"uppercase",letterSpacing:"0.04em"}}>Neto</div>
-                      <div style={{fontSize:13,fontWeight:700,color:isPast?c.dot:G.muted}}>{fmt(r.saldoNeto)}</div>
-                    </div>
-                    <div style={{width:1,height:28,background:isPast?c.border:G.border}}/>
-                    <div style={{textAlign:"right"}}>
-                      <div style={{fontSize:10,color:G.muted,textTransform:"uppercase",letterSpacing:"0.04em"}}>Saldo acum.</div>
-                      <div style={{fontSize:13,fontWeight:700,color:r.acum>=0?G.green:G.red}}>{fmt(r.acum)}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-
-      <div style={{marginTop:20,borderTop:`1px solid ${G.border}`,paddingTop:16}}>
+      {/* Retiros */}
+      <div style={{marginTop:16,borderTop:`1px solid ${G.border}`,paddingTop:16}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
           <span style={{fontWeight:600,fontSize:14}}>Retiros / Pagos</span>
-          <button onClick={()=>setShowRetiro(!showRetiro)} style={{fontSize:13,background:G.blueBg,color:G.blue,border:`1px solid ${G.blueBorder}`,borderRadius:8,padding:"4px 10px"}}>+ Agregar</button>
+          <button onClick={()=>setShowRetiro(!showRetiro)} style={{fontSize:13,background:G.blueBg,color:G.blue,border:`1px solid ${G.blueBorder}`,borderRadius:8,padding:"4px 10px",cursor:"pointer"}}>+ Agregar</button>
         </div>
         {showRetiro&&(
           <div style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:10,padding:12,marginBottom:10}}>
             <input type="number" placeholder="Monto" value={retiroMonto} onChange={e=>setRetiroMonto(e.target.value)} style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:14,marginBottom:8}}/>
-            <input placeholder="Descripcion (opcional)" value={retiroDesc} onChange={e=>setRetiroDesc(e.target.value)} style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:14,marginBottom:8}}/>
+            <input placeholder="Descripción (opcional)" value={retiroDesc} onChange={e=>setRetiroDesc(e.target.value)} style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:14,marginBottom:8}}/>
             <div style={{marginBottom:8}}>
               <label style={{fontSize:11,color:G.muted,display:"block",marginBottom:3}}>Fecha del retiro</label>
               <input type="date" value={retiroFecha} onChange={e=>setRetiroFecha(e.target.value)} style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:14}}/>
@@ -302,13 +383,13 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
               const fechaFinal=retiroFecha?retiroFecha.split("-").reverse().join("/"):hoy();
               await db.createRetiro({client_id:clientId,fecha:fechaFinal,monto:parseFloat(retiroMonto),descripcion:retiroDesc});
               setRetiroMonto("");setRetiroDesc("");setRetiroFecha("");setShowRetiro(false);load();
-            }} style={{background:G.blue,color:"#fff",border:"none",borderRadius:6,padding:"7px 14px",fontSize:13,fontWeight:600}}>Guardar</button>
+            }} style={{background:G.blue,color:"#fff",border:"none",borderRadius:6,padding:"7px 14px",fontSize:13,fontWeight:600,cursor:"pointer"}}>Guardar</button>
           </div>
         )}
         {retiros.map(r=>(
           <div key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${G.border}`}}>
             <div><div style={{fontSize:14,fontWeight:600}}>{fmt(r.monto)}</div><div style={{fontSize:12,color:G.muted}}>{r.fecha} · {r.descripcion||""}</div></div>
-            <button onClick={async()=>{await db.deleteRetiro(r.id);load();}} style={{fontSize:12,color:G.red,background:"none",border:"none"}}>✕</button>
+            <button onClick={async()=>{await db.deleteRetiro(r.id);load();}} style={{fontSize:12,color:G.red,background:"none",border:"none",cursor:"pointer"}}>✕</button>
           </div>
         ))}
       </div>
@@ -323,6 +404,15 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
   const[error,setError]=useState(null);
   const[expanded,setExpanded]=useState(null);
   const[clientTab,setClientTab]=useState("cierres");
+  const[showManual,setShowManual]=useState(false);
+  const[mFecha,setMFecha]=useState("");
+  const[mHora,setMHora]=useState("");
+  const[mTerminal,setMTerminal]=useState("");
+  const[mLote,setMLote]=useState("");
+  const[mComercio,setMComercio]=useState("");
+  const[mQR,setMQR]=useState("");
+  const[mCred,setMCred]=useState("");
+  const[mError,setMError]=useState("");
   const fileRef=useRef();
 
   const load=useCallback(async()=>{
@@ -375,11 +465,73 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
       </div>
       <div style={{maxWidth:600,margin:"0 auto",padding:16}}>
         <input ref={fileRef} type="file" accept="image/*" multiple style={{display:"none"}} onChange={e=>processFiles(Array.from(e.target.files))}/>
-        <div onClick={()=>fileRef.current.click()} style={{border:`2px dashed ${G.border}`,borderRadius:14,padding:"28px 20px",textAlign:"center",cursor:"pointer",marginBottom:12,background:G.card}}>
+        <div onClick={()=>fileRef.current.click()} style={{border:`2px dashed ${G.border}`,borderRadius:14,padding:"28px 20px",textAlign:"center",cursor:"pointer",marginBottom:8,background:G.card}}>
           <div style={{fontSize:32,marginBottom:8}}>📷</div>
           <div style={{fontWeight:600,marginBottom:4}}>Subir fotos de cierres</div>
           <div style={{color:G.muted,fontSize:13}}>Toca para seleccionar - Podés subir varios a la vez</div>
         </div>
+        <div style={{textAlign:"center",marginBottom:12}}>
+          <button onClick={()=>setShowManual(!showManual)} style={{fontSize:12,color:G.muted,background:"none",border:`1px solid ${G.border}`,borderRadius:8,padding:"5px 14px",cursor:"pointer"}}>
+            ✏️ {showManual?"Cancelar carga manual":"Cargar manualmente"}
+          </button>
+        </div>
+        {showManual&&(
+          <div style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:14,padding:16,marginBottom:12}}>
+            <div style={{fontWeight:700,fontSize:14,marginBottom:14}}>Carga manual de cierre</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+              <div>
+                <label style={{fontSize:11,color:G.muted,display:"block",marginBottom:3}}>Fecha (DD/MM/YYYY)</label>
+                <input value={mFecha} onChange={e=>setMFecha(e.target.value)} placeholder="23/04/2026" style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:13}}/>
+              </div>
+              <div>
+                <label style={{fontSize:11,color:G.muted,display:"block",marginBottom:3}}>Hora (HH:MM:SS)</label>
+                <input value={mHora} onChange={e=>setMHora(e.target.value)} placeholder="00:01:03" style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:13}}/>
+              </div>
+              <div>
+                <label style={{fontSize:11,color:G.muted,display:"block",marginBottom:3}}>Terminal</label>
+                <input value={mTerminal} onChange={e=>setMTerminal(e.target.value)} placeholder="16777521" style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:13}}/>
+              </div>
+              <div>
+                <label style={{fontSize:11,color:G.muted,display:"block",marginBottom:3}}>Nro. Lote</label>
+                <input value={mLote} onChange={e=>setMLote(e.target.value)} placeholder="012" style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:13}}/>
+              </div>
+              <div>
+                <label style={{fontSize:11,color:G.muted,display:"block",marginBottom:3}}>Nro. Comercio</label>
+                <input value={mComercio} onChange={e=>setMComercio(e.target.value)} placeholder="00491613" style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:13}}/>
+              </div>
+            </div>
+            <div style={{background:G.bg,borderRadius:10,padding:12,marginBottom:10}}>
+              <div style={{fontSize:12,fontWeight:600,color:G.muted,marginBottom:8,textTransform:"uppercase",letterSpacing:".04em"}}>Importes</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                <div>
+                  <label style={{fontSize:11,color:G.blue,display:"block",marginBottom:3}}>💳 QR / Débito</label>
+                  <input type="number" value={mQR} onChange={e=>setMQR(e.target.value)} placeholder="0" style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.blueBorder}`,borderRadius:6,fontSize:13,background:G.blueBg}}/>
+                </div>
+                <div>
+                  <label style={{fontSize:11,color:"#7c3aed",display:"block",marginBottom:3}}>Crédito</label>
+                  <input type="number" value={mCred} onChange={e=>setMCred(e.target.value)} placeholder="0" style={{width:"100%",padding:"8px 10px",border:"1px solid #e9d5ff",borderRadius:6,fontSize:13,background:"#faf5ff"}}/>
+                </div>
+              </div>
+              <div style={{marginTop:10,padding:"10px 12px",background:G.card,borderRadius:8,border:`1px solid ${G.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontSize:12,color:G.muted}}>Total calculado:</span>
+                <span style={{fontSize:15,fontWeight:800,color:G.text}}>{fmt((parseFloat(mQR)||0)+(parseFloat(mCred)||0))}</span>
+              </div>
+            </div>
+            {mError&&<div style={{padding:"8px 12px",background:G.redBg,borderRadius:8,color:G.red,fontSize:13,marginBottom:10}}>{mError}</div>}
+            <button onClick={async()=>{
+              if(!mFecha||(!mQR&&!mCred)){setMError("Completá al menos la fecha y un importe.");return;}
+              const qr=parseFloat(mQR)||0;
+              const cred=parseFloat(mCred)||0;
+              const total=qr+cred;
+              const cierre=calcCierre({terminal:mTerminal,fecha:mFecha,hora:mHora,nroLote:mLote,nroComercio:mComercio,qrDebito:qr,credito:cred,totalPesos:total,comisionPct:comisionPct||0.095});
+              await db.createCierre(mapCierre(cierre,clientId));
+              setMFecha("");setMHora("");setMTerminal("");setMLote("");setMComercio("");setMQR("");setMCred("");setMError("");setShowManual(false);
+              load();
+            }} style={{width:"100%",padding:"10px",background:G.blue,color:"#fff",border:"none",borderRadius:8,fontWeight:600,fontSize:14,cursor:"pointer"}}>
+              Guardar cierre manual
+            </button>
+          </div>
+        )}
         {loading&&<div style={{display:"flex",alignItems:"center",gap:10,padding:12,background:G.blueBg,borderRadius:10,marginBottom:12}}><Spinner/><span style={{fontSize:14,color:G.blue}}>Leyendo ticket con IA...</span></div>}
         {error&&<div style={{padding:12,background:G.redBg,borderRadius:10,color:G.red,fontSize:14,marginBottom:12}}>{error}</div>}
         <div style={{display:"flex",gap:8,marginBottom:16}}>
