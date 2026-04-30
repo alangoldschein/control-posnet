@@ -572,13 +572,12 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
             const mes=new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"});
             if(!mesesCli.includes(mes))mesesCli.push(mes);
           });
-          if(mesesCli.length<2)return null;
           return(
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
               <span style={{fontSize:12,color:G.muted,fontWeight:600}}>Ver período:</span>
               <select value={periodoCliente} onChange={e=>setPeriodoCliente(e.target.value)}
                 style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${G.blue}`,background:G.blue,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",outline:"none"}}>
-                <option value="todo" style={{background:"#fff",color:G.text}}>Todos</option>
+                <option value="todo" style={{background:"#fff",color:G.text}}>Todo el período</option>
                 {mesesCli.map(m=>(
                   <option key={m} value={m} style={{background:"#fff",color:G.text}}>{m.charAt(0).toUpperCase()+m.slice(1)}</option>
                 ))}
@@ -734,8 +733,8 @@ function AdminView({onLogout,apiKey}){
                     {["CLIENTE","VENDIDO","A COBRAR","CIERRES"].map(h=><div key={h}>{h}</div>)}
                   </div>
                   {(()=>{
-                    const provs=[...new Set(byClient.map(c=>c.proveedor||""))].sort((a,b)=>a===''?1:b===''?-1:a.localeCompare(b));
-                    return provs.map(prov=>{
+                    const provs=[...new Set(byClient.map(c=>c.proveedor||""))].sort((a,b)=>{if(!a)return 1;if(!b)return -1;return a.localeCompare(b);});
+                    return <React.Fragment>{provs.map(prov=>{
                       const grupo=byClient.filter(c=>(c.proveedor||"")===prov);
                       if(!grupo.length)return null;
                       return(
@@ -757,8 +756,8 @@ function AdminView({onLogout,apiKey}){
                           ))}
                         </div>
                       );
-                    });
-                  })()}}
+                    })}</React.Fragment>;
+                  })()}
                   <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"12px 14px",borderTop:`2px solid ${G.border}`,background:G.bg}}>
                     <div style={{fontWeight:700}}>TOTAL</div>
                     <div style={{fontWeight:700,color:G.blue,fontSize:13}}>{fmt(byClient.reduce((a,c)=>a+c.vendido,0))}</div>
