@@ -206,6 +206,7 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
   const[error,setError]=useState(null);
   const[expanded,setExpanded]=useState(null);
   const[showRetiro,setShowRetiro]=useState(false);
+  const[clientTab,setClientTab]=useState("cierres");
   const[retiroMonto,setRetiroMonto]=useState("");
   const[retiroDesc,setRetiroDesc]=useState("");
   const fileRef=useRef();
@@ -263,9 +264,14 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
           <div style={{fontWeight:600,marginBottom:4}}>Subir fotos de cierres</div>
           <div style={{color:G.muted,fontSize:13}}>Toca para seleccionar - Podés subir varios a la vez</div>
         </div>
+        <div style={{display:"flex",gap:8,marginBottom:16}}>
+          {[["cierres","Cierres"],["cuenta","Cuenta Corriente"]].map(([t,l])=>(
+            <button key={t} onClick={()=>setClientTab(t)} style={{padding:"7px 16px",borderRadius:8,border:"none",fontWeight:600,fontSize:13,background:clientTab===t?G.blue:G.card,color:clientTab===t?"#fff":G.muted}}>{l}</button>
+          ))}
+        </div>
         {loading&&<div style={{display:"flex",alignItems:"center",gap:10,padding:12,background:G.blueBg,borderRadius:10,marginBottom:12}}><Spinner/><span style={{fontSize:14,color:G.blue}}>Leyendo ticket con IA...</span></div>}
         {error&&<div style={{padding:12,background:G.redBg,borderRadius:10,color:G.red,fontSize:14,marginBottom:12}}>{error}</div>}
-        {cierres.length>0&&(
+        {clientTab==="cierres"&&cierres.length>0&&(
           <div style={{background:G.dark,borderRadius:14,padding:16,marginBottom:16,color:"#fff"}}>
             <div style={{fontSize:11,color:"#94a3b8",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.05em"}}>RESUMEN TOTAL</div>
             <div style={{fontSize:28,fontWeight:800,color:"#34d399",marginBottom:12}}>{fmt(totTotal)}</div>
@@ -279,7 +285,7 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
             </div>
           </div>
         )}
-        {sortCierres(cierres).map(r=>(
+        {clientTab==="cierres"&&sortCierres(cierres).map(r=>(
           <div key={r.id} className="anim" style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:12,marginBottom:10,overflow:"hidden"}}>
             <div onClick={()=>setExpanded(expanded===r.id?null:r.id)} style={{padding:"12px 14px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div>
@@ -308,14 +314,14 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
             )}
           </div>
         ))}
-        {cierres.length===0&&!loading&&(
+        {clientTab==="cierres"&&cierres.length===0&&!loading&&(
           <div style={{textAlign:"center",padding:"40px 0",color:G.muted}}>
             <div style={{fontSize:40,marginBottom:8}}>📋</div>
             <div style={{fontWeight:600}}>Sin cierres cargados</div>
             <div style={{fontSize:13}}>Subí las fotos de los tickets para comenzar</div>
           </div>
         )}
-        <div style={{marginTop:16,borderTop:`1px solid ${G.border}`,paddingTop:16}}>
+        {clientTab==="cierres"&&<div style={{marginTop:16,borderTop:`1px solid ${G.border}`,paddingTop:16}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
             <span style={{fontWeight:600,fontSize:14}}>Retiros / Pagos</span>
             <button onClick={()=>setShowRetiro(!showRetiro)} style={{fontSize:13,background:G.blueBg,color:G.blue,border:`1px solid ${G.blueBorder}`,borderRadius:8,padding:"4px 10px"}}>+ Agregar</button>
@@ -334,6 +340,66 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
             </div>
           ))}
         </div>
+      {clientTab==="cuenta"&&(
+        <div>
+          <div style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:12,overflow:"hidden",marginBottom:16}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",padding:"8px 14px",background:G.bg,fontSize:11,color:G.muted,fontWeight:600,textTransform:"uppercase"}}>
+              {["FECHA","CONCEPTO","MONTO","COMISIÓN","SALDO NETO"].map(h=><div key={h}>{h}</div>)}
+            </div>
+            {(()=>{
+              let saldo=0;
+              const rows=[];
+              // Build chronological events
+              const events=[];
+              sortCierres(cierres).forEach(c=>{
+                events.push({fecha:c.fecha,ms:toMs(c.fecha),tipo:"cierre",label:`Cierre lote ${c.nroLote||""}`,monto:c.totalPesos,com:c.comisionMonto,neto:c.saldoNeto});
+                if(c.fechaAcredQR)events.push({fecha:c.fechaAcredQR,ms:toMs(c.fechaAcredQR),tipo:"acred",label:`Acred. QR/Débito`,monto:c.qrDebito,com:0,neto:c.qrDebito});
+                if(c.fechaAcredCredito)events.push({fecha:c.fechaAcredCredito,ms:toMs(c.fechaAcredCredito),tipo:"acred",label:`Acred. Crédito`,monto:c.credito,com:0,neto:c.credito});
+              });
+              retiros.forEach(r=>{
+                const[d,m,y]=r.fecha.split("/");
+                events.push({fecha:r.fecha,ms:new Date(`${y}-${m}-${d}`).getTime(),tipo:"retiro",label:r.descripcion||"Retiro/Pago",monto:r.monto,com:0,neto:-r.monto});
+              });
+              events.sort((a,b)=>a.ms-b.ms);
+              const hoyMs=new Date().getTime();
+              events.forEach((e,i)=>{
+                saldo+=e.neto;
+                const isPast=e.ms<=hoyMs;
+                const color=e.tipo==="retiro"?G.red:e.tipo==="acred"?G.green:G.blue;
+                rows.push(
+                  <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",padding:"10px 14px",borderTop:`1px solid ${G.border}`,opacity:isPast?1:0.5}}>
+                    <div style={{fontSize:12,color:G.muted}}>{e.fecha}{!isPast&&<span style={{fontSize:10,color:"#f59e0b",marginLeft:4}}>⏳</span>}</div>
+                    <div style={{fontSize:13}}>{e.label}</div>
+                    <div style={{fontSize:13,color:color,fontWeight:600}}>{e.tipo==="retiro"?"-":""}{fmt(e.monto)}</div>
+                    <div style={{fontSize:13,color:G.red}}>{e.com>0?"-"+fmt(e.com):"-"}</div>
+                    <div style={{fontSize:13,fontWeight:700,color:saldo>=0?G.green:G.red}}>{fmt(saldo)}</div>
+                  </div>
+                );
+              });
+              return rows;
+            })()}
+          </div>
+          <div style={{marginTop:16}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <span style={{fontWeight:600,fontSize:14}}>Retiros / Pagos</span>
+              <button onClick={()=>setShowRetiro(!showRetiro)} style={{fontSize:13,background:G.blueBg,color:G.blue,border:`1px solid ${G.blueBorder}`,borderRadius:8,padding:"4px 10px"}}>+ Agregar</button>
+            </div>
+            {showRetiro&&(
+              <div style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:10,padding:12,marginBottom:10}}>
+                <input type="number" placeholder="Monto" value={retiroMonto} onChange={e=>setRetiroMonto(e.target.value)} style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:14,marginBottom:8}}/>
+                <input placeholder="Descripción (opcional)" value={retiroDesc} onChange={e=>setRetiroDesc(e.target.value)} style={{width:"100%",padding:"8px 10px",border:`1px solid ${G.border}`,borderRadius:6,fontSize:14,marginBottom:8}}/>
+                <button onClick={async()=>{if(!retiroMonto)return;await db.createRetiro({client_id:clientId,fecha:hoy(),monto:parseFloat(retiroMonto),descripcion:retiroDesc});setRetiroMonto("");setRetiroDesc("");setShowRetiro(false);load();}} style={{background:G.blue,color:"#fff",border:"none",borderRadius:6,padding:"7px 14px",fontSize:13,fontWeight:600}}>Guardar</button>
+              </div>
+            )}
+            {retiros.map(r=>(
+              <div key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${G.border}`}}>
+                <div><div style={{fontSize:14,fontWeight:600}}>{fmt(r.monto)}</div><div style={{fontSize:12,color:G.muted}}>{r.fecha} · {r.descripcion||""}</div></div>
+                <button onClick={async()=>{await db.deleteRetiro(r.id);load();}} style={{fontSize:12,color:G.red,background:"none",border:"none"}}>✕</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );
