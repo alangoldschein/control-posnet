@@ -232,29 +232,16 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
 
   return(
     <div>
-      {/* Filtro de periodo - dropdown */}
-      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,position:"relative"}}>
+      {/* Filtro de periodo - select */}
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
         <span style={{fontSize:12,color:G.muted,fontWeight:600}}>Período:</span>
-        <div style={{position:"relative"}}>
-          <button onClick={()=>setShowMesesDD(!showMesesDD)}
-            style={{padding:"6px 14px",borderRadius:8,border:`1px solid ${G.blue}`,background:G.blue,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
-            {periodoFiltro==="todo"?"Todo el período":periodoFiltro.charAt(0).toUpperCase()+periodoFiltro.slice(1)}
-            <span style={{fontSize:10}}>{showMesesDD?"▲":"▼"}</span>
-          </button>
-          {showMesesDD&&(
-            <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,background:"#fff",border:`1px solid ${G.border}`,borderRadius:10,boxShadow:"0 8px 24px rgba(0,0,0,0.12)",zIndex:100,minWidth:200,overflow:"hidden"}}>
-              {meses.map(m=>{
-                const val=m==="Todo"?"todo":m;
-                return(
-                  <div key={m} onClick={()=>{setPeriodoFiltro(val);setShowMesesDD(false);}}
-                    style={{padding:"10px 14px",cursor:"pointer",fontSize:13,fontWeight:periodoFiltro===val?700:400,color:periodoFiltro===val?G.blue:G.text,background:periodoFiltro===val?G.blueBg:"#fff",borderBottom:`1px solid ${G.border}`}}>
-                    {m.charAt(0).toUpperCase()+m.slice(1)}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <select value={periodoFiltro} onChange={e=>setPeriodoFiltro(e.target.value)}
+          style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${G.blue}`,background:G.blue,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",outline:"none"}}>
+          <option value="todo" style={{background:"#fff",color:G.text}}>Todo el período</option>
+          {meses.filter(m=>m!=="Todo").map(m=>(
+            <option key={m} value={m} style={{background:"#fff",color:G.text}}>{m.charAt(0).toUpperCase()+m.slice(1)}</option>
+          ))}
+        </select>
       </div>
 
       {/* CUADRO */}
@@ -560,18 +547,15 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
             if(!mesesCli.includes(mes))mesesCli.push(mes);
           });
           if(mesesCli.length>1)return(
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,position:"relative"}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
               <span style={{fontSize:12,color:G.muted,fontWeight:600}}>Período:</span>
-              <div style={{position:"relative"}}>
-                <select value={periodoCliente} onChange={e=>setPeriodoCliente(e.target.value)}
-                  style={{padding:"6px 28px 6px 12px",borderRadius:8,border:`1px solid ${G.blue}`,background:G.blue,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",appearance:"none",WebkitAppearance:"none",outline:"none"}}>
-                  <option value="todo" style={{background:"#fff",color:G.text}}>Todo el período</option>
-                  {mesesCli.map(m=>(
-                    <option key={m} value={m} style={{background:"#fff",color:G.text}}>{m.charAt(0).toUpperCase()+m.slice(1)}</option>
-                  ))}
-                </select>
-                <span style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",fontSize:10,color:"#fff",pointerEvents:"none"}}>▼</span>
-              </div>
+              <select value={periodoCliente} onChange={e=>setPeriodoCliente(e.target.value)}
+                style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${G.blue}`,background:G.blue,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",outline:"none"}}>
+                <option value="todo" style={{background:"#fff",color:G.text}}>Todo</option>
+                {mesesCli.map(m=>(
+                  <option key={m} value={m} style={{background:"#fff",color:G.text}}>{m.charAt(0).toUpperCase()+m.slice(1)}</option>
+                ))}
+              </select>
             </div>
           );
           return null;
@@ -701,13 +685,14 @@ function AdminView({onLogout,apiKey}){
         </div>
         {tab==="resumen"&&(
           <div>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
               <span style={{fontSize:13,color:G.muted,fontWeight:600}}>Mes:</span>
-              {(()=>{const months=[];for(let i=0;i<12;i++){const d=new Date();d.setMonth(d.getMonth()-i);months.push(d.toLocaleDateString("es-AR",{month:"long",year:"numeric"}));}return months.map(m=>(
-                <button key={m} onClick={()=>setActiveMonth(m)} style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${activeMonth===m?G.blue:G.border}`,background:activeMonth===m?G.blue:"#fff",color:activeMonth===m?"#fff":G.muted,fontSize:12,fontWeight:600,cursor:"pointer"}}>
-                  {m.charAt(0).toUpperCase()+m.slice(1)}
-                </button>
-              ))})()}
+              <select value={activeMonth} onChange={e=>setActiveMonth(e.target.value)}
+                style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${G.blue}`,background:G.blue,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",outline:"none"}}>
+                {(()=>{const months=[];for(let i=0;i<24;i++){const d=new Date();d.setMonth(d.getMonth()-i);months.push(d.toLocaleDateString("es-AR",{month:"long",year:"numeric"}));}return months.map(m=>(
+                  <option key={m} value={m} style={{background:"#fff",color:G.text}}>{m.charAt(0).toUpperCase()+m.slice(1)}</option>
+                ))})()}
+              </select>
             </div>
             {loading?<div style={{textAlign:"center",padding:40}}><Spinner/></div>:(
               <div>
