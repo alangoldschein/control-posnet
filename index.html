@@ -538,28 +538,7 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
             <button key={t} onClick={()=>setClientTab(t)} style={{padding:"7px 16px",borderRadius:8,border:"none",fontWeight:600,fontSize:13,background:clientTab===t?G.blue:G.card,color:clientTab===t?"#fff":G.muted}}>{l}</button>
           ))}
         </div>
-        {clientTab==="cierres"&&(()=>{
-          const mesesCli=[];
-          cierres.forEach(c=>{
-            if(!c.fecha)return;
-            const[d,m,y]=c.fecha.split("/");
-            const mes=new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"});
-            if(!mesesCli.includes(mes))mesesCli.push(mes);
-          });
-          if(mesesCli.length>1)return(
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-              <span style={{fontSize:12,color:G.muted,fontWeight:600}}>Período:</span>
-              <select value={periodoCliente} onChange={e=>setPeriodoCliente(e.target.value)}
-                style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${G.blue}`,background:G.blue,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",outline:"none"}}>
-                <option value="todo" style={{background:"#fff",color:G.text}}>Todo</option>
-                {mesesCli.map(m=>(
-                  <option key={m} value={m} style={{background:"#fff",color:G.text}}>{m.charAt(0).toUpperCase()+m.slice(1)}</option>
-                ))}
-              </select>
-            </div>
-          );
-          return null;
-        })()}
+
         {clientTab==="cierres"&&(()=>{
           const cf=periodoCliente==="todo"?cierres:cierres.filter(c=>{
             if(!c.fecha)return false;
@@ -584,6 +563,28 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
               </div>
             </div>
           ):null;
+        })()}
+        {clientTab==="cierres"&&cierres.length>0&&(()=>{
+          const mesesCli=[];
+          cierres.forEach(c=>{
+            if(!c.fecha)return;
+            const[d,m,y]=c.fecha.split("/");
+            const mes=new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"});
+            if(!mesesCli.includes(mes))mesesCli.push(mes);
+          });
+          if(mesesCli.length<2)return null;
+          return(
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+              <span style={{fontSize:12,color:G.muted,fontWeight:600}}>Ver período:</span>
+              <select value={periodoCliente} onChange={e=>setPeriodoCliente(e.target.value)}
+                style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${G.blue}`,background:G.blue,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",outline:"none"}}>
+                <option value="todo" style={{background:"#fff",color:G.text}}>Todos</option>
+                {mesesCli.map(m=>(
+                  <option key={m} value={m} style={{background:"#fff",color:G.text}}>{m.charAt(0).toUpperCase()+m.slice(1)}</option>
+                ))}
+              </select>
+            </div>
+          );
         })()}
         {clientTab==="cierres"&&sortCierres(periodoCliente==="todo"?cierres:cierres.filter(c=>{if(!c.fecha)return false;const[d,m,y]=c.fecha.split("/");return new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"})===periodoCliente;})).map(r=>(
           <div key={r.id} className="anim" style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:12,marginBottom:10,overflow:"hidden"}}>
@@ -632,6 +633,7 @@ function AdminView({onLogout,apiKey}){
   const[clients,setClients]=useState([]);
   const[allCierres,setAllCierres]=useState([]);
   const[allRetiros,setAllRetiros]=useState([]);
+  const[allCierresRaw,setAllCierresRaw]=useState([]);
   const[selClient,setSelClient]=useState(null);
   const[screen,setScreen]=useState("dash");
   const[activeMonth,setActiveMonth]=useState("todo");
@@ -645,6 +647,8 @@ function AdminView({onLogout,apiKey}){
       setClients(cls||[]);
       const allC=await Promise.all((cls||[]).map(c=>db.getCierres(c.client_id||c.username)));
       const allR=await Promise.all((cls||[]).map(c=>db.getRetiros(c.client_id||c.username)));
+      // Save all cierres unfiltered for month list
+      setAllCierresRaw(allC.flat());
       const filterByMonth=(arr)=>{
         if(activeMonth==="todo")return arr.flat().filter(r=>r.fecha);
         return arr.flat().filter(r=>{
@@ -696,7 +700,7 @@ function AdminView({onLogout,apiKey}){
                 {(()=>{
                   const meses=[];
                   clients.forEach(c=>{
-                    const cc=allCierres.filter(r=>r.client_id===(c.client_id||c.username));
+                    const cc=allCierresRaw.filter(r=>r.client_id===(c.client_id||c.username));
                     cc.forEach(r=>{
                       if(!r.fecha)return;
                       const[d,m,y]=r.fecha.split("/");
