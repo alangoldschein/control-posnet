@@ -313,7 +313,7 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
       ):(
         <div style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:14,overflow:"hidden",marginBottom:16}}>
           {/* Header */}
-          <div style={{display:"grid",gridTemplateColumns:"85px 100px 1fr 90px 80px 130px 20px",padding:"10px 14px",background:G.bg,fontSize:10,color:G.muted,fontWeight:700,textTransform:"uppercase",letterSpacing:".04em",gap:6,alignItems:"center"}}>
+          <div style={{display:"grid",gridTemplateColumns:"82px 96px 1fr 92px 80px 1fr 18px",padding:"10px 14px",background:G.bg,fontSize:10,color:G.muted,fontWeight:700,textTransform:"uppercase",letterSpacing:".04em",gap:6,alignItems:"center"}}>
             {["Fecha acred.","Tipo","Detalle","Importe","Comisión","Saldo acum.",""].map(h=><div key={h} style={{textAlign:h==="Importe"||h==="Comisión"||h==="Saldo acum."?"right":"left"}}>{h}</div>)}
           </div>
 
@@ -326,7 +326,7 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
               <div key={r.id}>
                 <div style={{borderTop:`1px solid ${G.border}`}}>
                   <div onClick={()=>setExpanded(isExp?null:r.id)}
-                    style={{display:"grid",gridTemplateColumns:"85px 100px 1fr 90px 80px 130px 20px",padding:"11px 14px",gap:6,alignItems:"center",cursor:"pointer",background:isExp?"#f8fafc":"#fff",opacity:isPast?1:0.65}}>
+                    style={{display:"grid",gridTemplateColumns:"82px 96px 1fr 92px 80px 1fr 18px",padding:"11px 14px",gap:6,alignItems:"center",cursor:"pointer",background:isExp?"#f8fafc":"#fff",opacity:isPast?1:0.65}}>
                     <div>
                       <div style={{fontSize:12,fontWeight:600,color:isPast?G.text:"#94a3b8"}}>{r.fecha}</div>
                       {!isPast&&<div style={{fontSize:9,color:"#f59e0b",fontWeight:600,marginTop:1}}>⏳ pendiente</div>}
@@ -634,7 +634,7 @@ function AdminView({onLogout,apiKey}){
   const[allRetiros,setAllRetiros]=useState([]);
   const[selClient,setSelClient]=useState(null);
   const[screen,setScreen]=useState("dash");
-  const[activeMonth,setActiveMonth]=useState(()=>new Date().toLocaleDateString("es-AR",{month:"long",year:"numeric"}));
+  const[activeMonth,setActiveMonth]=useState("todo");
   const[newUser,setNewUser]=useState({nombre:"",username:"",password:"",comision:"0.095"});
   const[loading,setLoading]=useState(false);
 
@@ -645,11 +645,14 @@ function AdminView({onLogout,apiKey}){
       setClients(cls||[]);
       const allC=await Promise.all((cls||[]).map(c=>db.getCierres(c.client_id||c.username)));
       const allR=await Promise.all((cls||[]).map(c=>db.getRetiros(c.client_id||c.username)));
-      const filterByMonth=(arr)=>arr.flat().filter(r=>{
-        if(!r.fecha)return false;
-        const[d,m,y]=r.fecha.split("/");
-        return new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"})===activeMonth;
-      });
+      const filterByMonth=(arr)=>{
+        if(activeMonth==="todo")return arr.flat().filter(r=>r.fecha);
+        return arr.flat().filter(r=>{
+          if(!r.fecha)return false;
+          const[d,m,y]=r.fecha.split("/");
+          return new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"})===activeMonth;
+        });
+      };
       setAllCierres(filterByMonth(allC));
       setAllRetiros(filterByMonth(allR));
     }catch(e){}
@@ -689,15 +692,29 @@ function AdminView({onLogout,apiKey}){
               <span style={{fontSize:13,color:G.muted,fontWeight:600}}>Mes:</span>
               <select value={activeMonth} onChange={e=>setActiveMonth(e.target.value)}
                 style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${G.blue}`,background:G.blue,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",outline:"none"}}>
-                {(()=>{const months=[];for(let i=0;i<24;i++){const d=new Date();d.setMonth(d.getMonth()-i);months.push(d.toLocaleDateString("es-AR",{month:"long",year:"numeric"}));}return months.map(m=>(
-                  <option key={m} value={m} style={{background:"#fff",color:G.text}}>{m.charAt(0).toUpperCase()+m.slice(1)}</option>
-                ))})()}
+                <option value="todo" style={{background:"#fff",color:G.text}}>Todo</option>
+                {(()=>{
+                  const meses=[];
+                  clients.forEach(c=>{
+                    const cc=allCierres.filter(r=>r.client_id===(c.client_id||c.username));
+                    cc.forEach(r=>{
+                      if(!r.fecha)return;
+                      const[d,m,y]=r.fecha.split("/");
+                      const mes=new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"});
+                      if(!meses.includes(mes))meses.push(mes);
+                    });
+                  });
+                  meses.sort((a,b)=>new Date(b.split(" de ")[1],["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"].indexOf(a.split(" de ")[0]),1)-new Date(a.split(" de ")[1],["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"].indexOf(b.split(" de ")[0]),1));
+                  return meses.map(m=>(
+                    <option key={m} value={m} style={{background:"#fff",color:G.text}}>{m.charAt(0).toUpperCase()+m.slice(1)}</option>
+                  ));
+                })()}
               </select>
             </div>
             {loading?<div style={{textAlign:"center",padding:40}}><Spinner/></div>:(
               <div>
                 <div style={{background:G.dark,borderRadius:14,padding:20,marginBottom:20,color:"#fff"}}>
-                  <div style={{fontSize:11,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:4}}>{activeMonth.toUpperCase()} · TU FACTURACIÓN</div>
+                  <div style={{fontSize:11,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:4}}>{activeMonth==="todo"?"TODO EL PERÍODO":activeMonth.toUpperCase()} · TU FACTURACIÓN</div>
                   <div style={{fontSize:32,fontWeight:800,color:"#34d399",marginBottom:16}}>{fmt(byClient.reduce((a,c)=>a+c.aCobrar,0))}</div>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
                     {[["COM. TARJETAS",fmt(byClient.reduce((a,c)=>a+c.aCobrar,0)),"#60a5fa"],["VENDIDO TOTAL",fmt(byClient.reduce((a,c)=>a+c.vendido,0)),"#a78bfa"],["CLIENTES",byClient.filter(c=>c.cierresCount>0).length+" activos","#34d399"],["CIERRES",allCierres.length+" este mes","#fbbf24"]].map(([l,v,c])=>(
