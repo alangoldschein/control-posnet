@@ -316,7 +316,7 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
         <div style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:14,overflow:"hidden",marginBottom:16}}>
           {/* Header */}
           <div style={{display:"grid",gridTemplateColumns:"90px 110px 1fr 100px 88px 100px 20px",padding:"10px 14px",background:G.bg,fontSize:10,color:G.muted,fontWeight:700,textTransform:"uppercase",letterSpacing:".04em",gap:6,alignItems:"center"}}>
-            {["Fecha acred.","Tipo","Detalle","Importe","Comisión","Saldo acum.",""].map(h=><div key={h} style={{textAlign:h==="Importe"||h==="Comisión"||h==="Saldo acum."?"right":"left"}}>{h}</div>)}
+            {["Fecha acred.","Tipo","Detalle","Importe","Saldo acum.",""].map(h=><div key={h} style={{textAlign:h==="Importe"||h==="Saldo acum."?"right":"left"}}>{h}</div>)}
           </div>
 
           {rows.map((r,i)=>{
@@ -340,8 +340,7 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
                       {r.terminal&&<span style={{display:"block",color:"#94a3b8"}}>Terminal {r.terminal}</span>}
                     </div>
                     <div style={{textAlign:"right",fontSize:13,fontWeight:700,color:r.importe>0?G.text:G.red}}>{r.importe>0?fmt(r.importe):"-"+fmt(-r.importe)}</div>
-                    <div style={{textAlign:"right",fontSize:12,color:r.com>0?G.red:G.muted}}>{r.com>0?"-"+fmt(r.com):"—"}</div>
-                    <div style={{textAlign:"right",fontSize:13,fontWeight:800,color:r.acum>=0?G.green:G.red}}>{fmt(r.acum)}</div>
+                    <div style={{textAlign:"right",fontSize:14,fontWeight:800,color:r.acum>=0?G.green:G.red}}>{fmt(r.acum)}</div>
                     <div style={{textAlign:"right",fontSize:11,color:G.muted}}>{isExp?"▲":"▼"}</div>
                   </div>
                   {isExp&&(
