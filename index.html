@@ -157,39 +157,87 @@ function Login({onLogin}){
   );
 }
 
-function CuentaCorriente({cierres,retiros,clientId,load}){
+function exportCuentaExcel(rows,clientName){
+  const wb=XLSX.utils.book_new();
+  const data=[["Fecha","Concepto","Vendido","Comisión","Saldo Neto","Saldo Acumulado"]];
+  rows.forEach(r=>data.push([r.fecha,r.label,r.vendido||"",r.com||"",r.neto||"",r.acum]));
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb,ws,"Cuenta Corriente");
+  XLSX.writeFile(wb,`${clientName}_cuenta_corriente.xlsx`);
+}
+
+function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
   const[showRetiro,setShowRetiro]=useState(false);
   const[retiroMonto,setRetiroMonto]=useState("");
   const[retiroDesc,setRetiroDesc]=useState("");
+  const[expandedRow,setExpandedRow]=useState(null);
   const hoyMs=new Date().getTime();
 
-  const events=[];
+  // Build rows: one per cierre + one per retiro, sorted by fecha
+  const rows=[];
   sortCierres(cierres).forEach(c=>{
-    events.push({fecha:c.fecha,ms:toMs(c.fecha),tipo:"cierre",label:`Cierre lote ${c.nroLote||""}`,monto:c.totalPesos,com:c.comisionMonto,neto:c.saldoNeto});
-    if(c.fechaAcredQR)events.push({fecha:c.fechaAcredQR,ms:toMs(c.fechaAcredQR),tipo:"acred",label:"Acred. QR/Débito",monto:c.qrDebito,neto:0});
-    if(c.fechaAcredCredito)events.push({fecha:c.fechaAcredCredito,ms:toMs(c.fechaAcredCredito),tipo:"acred",label:"Acred. Crédito",monto:c.credito,neto:0});
+    rows.push({
+      id:`c-${c.id}`,fecha:c.fecha,ms:toMs(c.fecha),tipo:"cierre",
+      label:`Cierre lote ${c.nroLote||""}`,
+      vendido:c.totalPesos,com:c.comisionMonto,neto:c.saldoNeto,
+      detail:[
+        c.qrDebito>0&&{tipo:"QR/Débito",monto:c.qrDebito,fechaAcred:c.fechaAcredQR},
+        c.credito>0&&{tipo:"Crédito",monto:c.credito,fechaAcred:c.fechaAcredCredito},
+      ].filter(Boolean),
+      qrDebito:c.qrDebito,credito:c.credito,
+      fechaAcredQR:c.fechaAcredQR,fechaAcredCredito:c.fechaAcredCredito,
+    });
   });
-  retiros.forEach(r=>{events.push({fecha:r.fecha,ms:toMs(r.fecha),tipo:"retiro",label:r.descripcion||"Retiro/Pago",monto:r.monto,neto:-r.monto,id:r.id});});
-  events.sort((a,b)=>a.ms-b.ms);
+  retiros.forEach(r=>{
+    rows.push({
+      id:`r-${r.id}`,fecha:r.fecha,ms:toMs(r.fecha),tipo:"retiro",
+      label:r.descripcion||"Retiro/Pago",
+      vendido:0,com:0,neto:-r.monto,retiroId:r.id,monto:r.monto,
+      detail:[],
+    });
+  });
+  rows.sort((a,b)=>a.ms-b.ms);
 
-  let saldo=0;
+  let acum=0;
+  const rowsWithAcum=rows.map(r=>{acum+=r.neto;return{...r,acum};});
+
   return(
     <div>
+      <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
+        <button onClick={()=>exportCuentaExcel(rowsWithAcum,clientName||"cliente")} style={{fontSize:13,background:G.greenBg,color:G.green,border:`1px solid #bbf7d0`,borderRadius:8,padding:"6px 12px",fontWeight:600}}>↓ Excel</button>
+      </div>
       <div style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:12,overflow:"hidden",marginBottom:16}}>
-        <div style={{display:"grid",gridTemplateColumns:"90px 1fr 100px 90px",padding:"8px 14px",background:G.bg,fontSize:11,color:G.muted,fontWeight:600,textTransform:"uppercase"}}>
-          <div>FECHA</div><div>CONCEPTO</div><div style={{textAlign:"right"}}>MONTO</div><div style={{textAlign:"right"}}>SALDO</div>
+        <div style={{display:"grid",gridTemplateColumns:"80px 1fr 90px 90px 90px 16px",padding:"8px 12px",background:G.bg,fontSize:10,color:G.muted,fontWeight:700,textTransform:"uppercase",gap:4}}>
+          <div>FECHA</div><div>CONCEPTO</div><div style={{textAlign:"right"}}>VENDIDO</div><div style={{textAlign:"right"}}>COMISIÓN</div><div style={{textAlign:"right"}}>SALDO ACUM.</div><div/>
         </div>
-        {events.length===0&&<div style={{padding:20,textAlign:"center",color:G.muted,fontSize:13}}>Sin movimientos</div>}
-        {events.map((e,i)=>{
-          saldo+=e.neto;
-          const isPast=e.ms<=hoyMs;
-          const color=e.tipo==="retiro"?G.red:e.tipo==="acred"?G.green:G.blue;
+        {rowsWithAcum.length===0&&<div style={{padding:20,textAlign:"center",color:G.muted,fontSize:13}}>Sin movimientos</div>}
+        {rowsWithAcum.map((r,i)=>{
+          const isPast=r.ms<=hoyMs;
+          const isExp=expandedRow===r.id;
           return(
-            <div key={i} style={{display:"grid",gridTemplateColumns:"90px 1fr 100px 90px",padding:"10px 14px",borderTop:`1px solid ${G.border}`,opacity:isPast?1:0.6,alignItems:"center"}}>
-              <div style={{fontSize:12,color:G.muted}}>{e.fecha}{!isPast&&<span style={{fontSize:10,color:"#f59e0b",marginLeft:4}}>⏳</span>}</div>
-              <div style={{fontSize:13}}>{e.label}</div>
-              <div style={{fontSize:13,color,fontWeight:600,textAlign:"right"}}>{e.tipo==="retiro"?"-":""}{fmt(e.monto)}</div>
-              <div style={{fontSize:13,fontWeight:700,color:saldo>=0?G.green:G.red,textAlign:"right"}}>{fmt(saldo)}</div>
+            <div key={r.id} style={{borderTop:`1px solid ${G.border}`,opacity:isPast?1:0.65}}>
+              <div onClick={()=>r.detail&&r.detail.length>0?setExpandedRow(isExp?null:r.id):null}
+                style={{display:"grid",gridTemplateColumns:"80px 1fr 90px 90px 90px 16px",padding:"10px 12px",alignItems:"center",gap:4,cursor:r.detail&&r.detail.length>0?"pointer":"default"}}>
+                <div style={{fontSize:11,color:G.muted}}>{r.fecha}{!isPast&&<span style={{fontSize:9,color:"#f59e0b",marginLeft:3}}>⏳</span>}</div>
+                <div style={{fontSize:13,fontWeight:r.tipo==="cierre"?600:400,color:r.tipo==="retiro"?G.red:G.text}}>{r.label}</div>
+                <div style={{fontSize:12,fontWeight:600,color:r.tipo==="retiro"?G.red:G.blue,textAlign:"right"}}>{r.vendido>0?fmt(r.vendido):r.tipo==="retiro"?"-"+fmt(r.monto):"—"}</div>
+                <div style={{fontSize:12,color:G.red,textAlign:"right"}}>{r.com>0?"-"+fmt(r.com):"—"}</div>
+                <div style={{fontSize:12,fontWeight:700,color:r.acum>=0?G.green:G.red,textAlign:"right"}}>{fmt(r.acum)}</div>
+                <div style={{fontSize:10,color:G.muted,textAlign:"right"}}>{r.detail&&r.detail.length>0?(isExp?"▲":"▼"):""}</div>
+              </div>
+              {isExp&&r.detail&&r.detail.length>0&&(
+                <div style={{background:G.bg,padding:"8px 12px 12px 20px",borderTop:`1px solid ${G.border}`}}>
+                  {r.detail.map((d,j)=>(
+                    <div key={j} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:j<r.detail.length-1?`1px solid ${G.border}`:"none"}}>
+                      <div>
+                        <span style={{fontSize:12,fontWeight:600,color:d.tipo==="QR/Débito"?G.blue:"#7c3aed"}}>{d.tipo}</span>
+                        <span style={{fontSize:11,color:G.muted,marginLeft:8}}>Acred: {d.fechaAcred||"—"}</span>
+                      </div>
+                      <span style={{fontSize:13,fontWeight:700}}>{fmt(d.monto)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}
@@ -335,7 +383,7 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
             <div style={{fontSize:13}}>Subí las fotos de los tickets para comenzar</div>
           </div>
         )}
-        {clientTab==="cuenta"&&<CuentaCorriente cierres={cierres} retiros={retiros} clientId={clientId} load={load}/>}
+        {clientTab==="cuenta"&&<CuentaCorriente cierres={cierres} retiros={retiros} clientId={clientId} load={load} clientName={clientName}/>}
       </div>
     </div>
   );
