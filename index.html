@@ -232,18 +232,29 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
 
   return(
     <div>
-      {/* Filtro de periodo */}
-      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+      {/* Filtro de periodo - dropdown */}
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,position:"relative"}}>
         <span style={{fontSize:12,color:G.muted,fontWeight:600}}>Período:</span>
-        {meses.map(m=>(
-          <button key={m} onClick={()=>setPeriodoFiltro(m==="Todo"?"todo":m)}
-            style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${periodoFiltro===(m==="Todo"?"todo":m)?G.blue:G.border}`,
-              background:periodoFiltro===(m==="Todo"?"todo":m)?G.blue:"#fff",
-              color:periodoFiltro===(m==="Todo"?"todo":m)?"#fff":G.muted,
-              fontSize:12,fontWeight:600,cursor:"pointer"}}>
-            {m}
+        <div style={{position:"relative"}}>
+          <button onClick={()=>setShowMesesDD(!showMesesDD)}
+            style={{padding:"6px 14px",borderRadius:8,border:`1px solid ${G.blue}`,background:G.blue,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
+            {periodoFiltro==="todo"?"Todo el período":periodoFiltro.charAt(0).toUpperCase()+periodoFiltro.slice(1)}
+            <span style={{fontSize:10}}>{showMesesDD?"▲":"▼"}</span>
           </button>
-        ))}
+          {showMesesDD&&(
+            <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,background:"#fff",border:`1px solid ${G.border}`,borderRadius:10,boxShadow:"0 8px 24px rgba(0,0,0,0.12)",zIndex:100,minWidth:200,overflow:"hidden"}}>
+              {meses.map(m=>{
+                const val=m==="Todo"?"todo":m;
+                return(
+                  <div key={m} onClick={()=>{setPeriodoFiltro(val);setShowMesesDD(false);}}
+                    style={{padding:"10px 14px",cursor:"pointer",fontSize:13,fontWeight:periodoFiltro===val?700:400,color:periodoFiltro===val?G.blue:G.text,background:periodoFiltro===val?G.blueBg:"#fff",borderBottom:`1px solid ${G.border}`}}>
+                    {m.charAt(0).toUpperCase()+m.slice(1)}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* CUADRO */}
@@ -315,7 +326,7 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
       ):(
         <div style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:14,overflow:"hidden",marginBottom:16}}>
           {/* Header */}
-          <div style={{display:"grid",gridTemplateColumns:"90px 110px 1fr 100px 88px 100px 20px",padding:"10px 14px",background:G.bg,fontSize:10,color:G.muted,fontWeight:700,textTransform:"uppercase",letterSpacing:".04em",gap:6,alignItems:"center"}}>
+          <div style={{display:"grid",gridTemplateColumns:"85px 100px 1fr 90px 80px 130px 20px",padding:"10px 14px",background:G.bg,fontSize:10,color:G.muted,fontWeight:700,textTransform:"uppercase",letterSpacing:".04em",gap:6,alignItems:"center"}}>
             {["Fecha acred.","Tipo","Detalle","Importe","Comisión","Saldo acum.",""].map(h=><div key={h} style={{textAlign:h==="Importe"||h==="Comisión"||h==="Saldo acum."?"right":"left"}}>{h}</div>)}
           </div>
 
@@ -328,7 +339,7 @@ function CuentaCorriente({cierres,retiros,clientId,load,clientName}){
               <div key={r.id}>
                 <div style={{borderTop:`1px solid ${G.border}`}}>
                   <div onClick={()=>setExpanded(isExp?null:r.id)}
-                    style={{display:"grid",gridTemplateColumns:"90px 110px 1fr 100px 88px 100px 20px",padding:"11px 14px",gap:6,alignItems:"center",cursor:"pointer",background:isExp?"#f8fafc":"#fff",opacity:isPast?1:0.65}}>
+                    style={{display:"grid",gridTemplateColumns:"85px 100px 1fr 90px 80px 130px 20px",padding:"11px 14px",gap:6,alignItems:"center",cursor:"pointer",background:isExp?"#f8fafc":"#fff",opacity:isPast?1:0.65}}>
                     <div>
                       <div style={{fontSize:12,fontWeight:600,color:isPast?G.text:"#94a3b8"}}>{r.fecha}</div>
                       {!isPast&&<div style={{fontSize:9,color:"#f59e0b",fontWeight:600,marginTop:1}}>⏳ pendiente</div>}
@@ -549,14 +560,18 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
             if(!mesesCli.includes(mes))mesesCli.push(mes);
           });
           if(mesesCli.length>1)return(
-            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12,flexWrap:"wrap"}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,position:"relative"}}>
               <span style={{fontSize:12,color:G.muted,fontWeight:600}}>Período:</span>
-              <button onClick={()=>setPeriodoCliente("todo")} style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${periodoCliente==="todo"?G.blue:G.border}`,background:periodoCliente==="todo"?G.blue:"#fff",color:periodoCliente==="todo"?"#fff":G.muted,fontSize:11,fontWeight:600,cursor:"pointer"}}>Todo</button>
-              {mesesCli.map(m=>(
-                <button key={m} onClick={()=>setPeriodoCliente(m)} style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${periodoCliente===m?G.blue:G.border}`,background:periodoCliente===m?G.blue:"#fff",color:periodoCliente===m?"#fff":G.muted,fontSize:11,fontWeight:600,cursor:"pointer"}}>
-                  {m.charAt(0).toUpperCase()+m.slice(1)}
-                </button>
-              ))}
+              <div style={{position:"relative"}}>
+                <select value={periodoCliente} onChange={e=>setPeriodoCliente(e.target.value)}
+                  style={{padding:"6px 28px 6px 12px",borderRadius:8,border:`1px solid ${G.blue}`,background:G.blue,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",appearance:"none",WebkitAppearance:"none",outline:"none"}}>
+                  <option value="todo" style={{background:"#fff",color:G.text}}>Todo el período</option>
+                  {mesesCli.map(m=>(
+                    <option key={m} value={m} style={{background:"#fff",color:G.text}}>{m.charAt(0).toUpperCase()+m.slice(1)}</option>
+                  ))}
+                </select>
+                <span style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",fontSize:10,color:"#fff",pointerEvents:"none"}}>▼</span>
+              </div>
             </div>
           );
           return null;
