@@ -541,43 +541,52 @@ function ClientView({clientName,comisionPct,clientId,onBack,onLogout,apiKey}){
           ))}
         </div>
         {clientTab==="cierres"&&(()=>{
-          const mesesCli=["Todo"];
-          cierres.forEach(c=>{const[d,m,y]=c.fecha.split("/");const mes=new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"});if(!mesesCli.includes(mes))mesesCli.push(mes);});
-          const cierresFiltrados=periodoCliente==="todo"?cierres:cierres.filter(c=>{const[d,m,y]=c.fecha.split("/");return new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"})===periodoCliente;});
-          if(mesesCli.length>2)return(
+          const mesesCli=[];
+          cierres.forEach(c=>{
+            if(!c.fecha)return;
+            const[d,m,y]=c.fecha.split("/");
+            const mes=new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"});
+            if(!mesesCli.includes(mes))mesesCli.push(mes);
+          });
+          if(mesesCli.length>1)return(
             <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12,flexWrap:"wrap"}}>
               <span style={{fontSize:12,color:G.muted,fontWeight:600}}>Período:</span>
+              <button onClick={()=>setPeriodoCliente("todo")} style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${periodoCliente==="todo"?G.blue:G.border}`,background:periodoCliente==="todo"?G.blue:"#fff",color:periodoCliente==="todo"?"#fff":G.muted,fontSize:11,fontWeight:600,cursor:"pointer"}}>Todo</button>
               {mesesCli.map(m=>(
-                <button key={m} onClick={()=>setPeriodoCliente(m==="Todo"?"todo":m)}
-                  style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${periodoCliente===(m==="Todo"?"todo":m)?G.blue:G.border}`,background:periodoCliente===(m==="Todo"?"todo":m)?G.blue:"#fff",color:periodoCliente===(m==="Todo"?"todo":m)?"#fff":G.muted,fontSize:11,fontWeight:600,cursor:"pointer"}}>
+                <button key={m} onClick={()=>setPeriodoCliente(m)} style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${periodoCliente===m?G.blue:G.border}`,background:periodoCliente===m?G.blue:"#fff",color:periodoCliente===m?"#fff":G.muted,fontSize:11,fontWeight:600,cursor:"pointer"}}>
                   {m.charAt(0).toUpperCase()+m.slice(1)}
                 </button>
               ))}
             </div>
-          );return null;
+          );
+          return null;
         })()}
         {clientTab==="cierres"&&(()=>{
-          const cierresFiltrados=periodoCliente==="todo"?cierres:cierres.filter(c=>{const[d,m,y]=c.fecha.split("/");return new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"})===periodoCliente;});
-          const totTotal=cierresFiltrados.reduce((a,r)=>a+r.totalPesos,0);
-          const totQR=cierresFiltrados.reduce((a,r)=>a+r.qrDebito,0);
-          const totCred=cierresFiltrados.reduce((a,r)=>a+r.credito,0);
-          const totCom=cierresFiltrados.reduce((a,r)=>a+r.comisionMonto,0);
-          return cierresFiltrados.length>0?(
-          <div style={{background:G.dark,borderRadius:14,padding:16,marginBottom:16,color:"#fff"}}>
-          <div style={{background:G.dark,borderRadius:14,padding:16,marginBottom:16,color:"#fff"}}>
-            <div style={{fontSize:11,color:"#94a3b8",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.05em"}}>RESUMEN TOTAL</div>
-            <div style={{fontSize:28,fontWeight:800,color:"#34d399",marginBottom:12}}>{fmt(totTotal)}</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              {[["QR/Débito",fmt(totQR),"#60a5fa"],["Crédito",fmt(totCred),"#a78bfa"],["Comisión",fmt(totCom),"#f87171"],["Neto",fmt(totTotal-totCom),"#34d399"]].map(([l,v,c])=>(
-                <div key={l} style={{background:G.darkCard,borderRadius:8,padding:"8px 12px"}}>
-                  <div style={{fontSize:11,color:"#94a3b8",marginBottom:2}}>{l}</div>
-                  <div style={{fontWeight:700,color:c,fontSize:15}}>{v}</div>
-                </div>
-              ))}
+          const cf=periodoCliente==="todo"?cierres:cierres.filter(c=>{
+            if(!c.fecha)return false;
+            const[d,m,y]=c.fecha.split("/");
+            return new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"})===periodoCliente;
+          });
+          const totTotal=cf.reduce((a,r)=>a+r.totalPesos,0);
+          const totQR=cf.reduce((a,r)=>a+r.qrDebito,0);
+          const totCred=cf.reduce((a,r)=>a+r.credito,0);
+          const totCom=cf.reduce((a,r)=>a+r.comisionMonto,0);
+          return cf.length>0?(
+            <div style={{background:G.dark,borderRadius:14,padding:16,marginBottom:16,color:"#fff"}}>
+              <div style={{fontSize:11,color:"#94a3b8",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.05em"}}>RESUMEN TOTAL</div>
+              <div style={{fontSize:28,fontWeight:800,color:"#34d399",marginBottom:12}}>{fmt(totTotal)}</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                {[["QR/Débito",fmt(totQR),"#60a5fa"],["Crédito",fmt(totCred),"#a78bfa"],["Comisión",fmt(totCom),"#f87171"],["Neto",fmt(totTotal-totCom),"#34d399"]].map(([l,v,c])=>(
+                  <div key={l} style={{background:G.darkCard,borderRadius:8,padding:"8px 12px"}}>
+                    <div style={{fontSize:11,color:"#94a3b8",marginBottom:2}}>{l}</div>
+                    <div style={{fontWeight:700,color:c,fontSize:15}}>{v}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ):null;})()}
-        {clientTab==="cierres"&&sortCierres(periodoCliente==="todo"?cierres:cierres.filter(c=>{const[d,m,y]=c.fecha.split("/");return new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"})===periodoCliente;})).map(r=>(
+          ):null;
+        })()}
+        {clientTab==="cierres"&&sortCierres(periodoCliente==="todo"?cierres:cierres.filter(c=>{if(!c.fecha)return false;const[d,m,y]=c.fecha.split("/");return new Date(`${y}-${m}-${d}`).toLocaleDateString("es-AR",{month:"long",year:"numeric"})===periodoCliente;})).map(r=>(
           <div key={r.id} className="anim" style={{background:G.card,border:`1px solid ${G.border}`,borderRadius:12,marginBottom:10,overflow:"hidden"}}>
             <div onClick={()=>setExpanded(expanded===r.id?null:r.id)} style={{padding:"12px 14px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div>
