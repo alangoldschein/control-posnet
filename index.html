@@ -23,8 +23,6 @@
     --text3:#475569;
   }
   body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh}
-  
-  /* LOGIN */
   #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
   .login-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px;width:100%;max-width:380px}
   .login-logo{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px}
@@ -36,8 +34,6 @@
   .btn-primary{width:100%;background:var(--accent);color:#000;border:none;border-radius:6px;padding:12px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;transition:opacity .2s}
   .btn-primary:hover{opacity:.85}
   .error-msg{color:var(--red);font-size:12px;margin-top:12px;text-align:center}
-
-  /* LAYOUT */
   #app{display:none;min-height:100vh}
   .sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;padding:20px 0}
   .sidebar-logo{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
@@ -53,13 +49,10 @@
   .sidebar-bottom{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border)}
   .btn-logout{width:100%;background:transparent;border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all .2s}
   .btn-logout:hover{border-color:var(--red);color:var(--red)}
-  
   .main{margin-left:220px;padding:28px 32px;min-height:100vh}
   .page-header{margin-bottom:28px}
   .page-title{font-size:20px;font-weight:600}
   .page-sub{font-size:13px;color:var(--text2);margin-top:4px}
-
-  /* ADMIN - CLIENTES */
   .clients-grid{display:grid;gap:12px}
   .client-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s;cursor:pointer}
   .client-card:hover{border-color:var(--accent)}
@@ -73,21 +66,15 @@
   .stat-value.yellow{color:var(--yellow)}
   .btn-view{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 14px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all .2s}
   .btn-view:hover{border-color:var(--accent);color:var(--accent)}
-
-  /* TABS */
   .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px;width:fit-content}
   .tab{padding:7px 18px;border-radius:6px;font-size:13px;cursor:pointer;color:var(--text2);transition:all .2s;border:none;background:transparent;font-family:'IBM Plex Sans',sans-serif}
   .tab.active{background:var(--accent);color:#000;font-weight:600}
-
-  /* UPLOAD */
   .upload-zone{border:2px dashed var(--border);border-radius:10px;padding:40px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface)}
   .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--surface2)}
   .upload-icon{font-size:36px;margin-bottom:12px}
   .upload-text{font-size:14px;color:var(--text2)}
   .upload-sub{font-size:12px;color:var(--text3);margin-top:4px}
   #file-input{display:none}
-
-  /* PROCESSING */
   .processing-list{display:grid;gap:8px;margin-top:16px}
   .proc-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px}
   .proc-icon{font-size:18px}
@@ -98,8 +85,6 @@
   .proc-status.loading{color:var(--yellow)}
   .spinner{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
   @keyframes spin{to{transform:rotate(360deg)}}
-
-  /* CIERRES */
   .cierres-list{display:grid;gap:10px}
   .cierre-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
   .cierre-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
@@ -126,8 +111,6 @@
   .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
   .btn-del{background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text3);font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;margin-top:12px;transition:all .2s}
   .btn-del:hover{border-color:var(--red);color:var(--red)}
-
-  /* CALENDARIO */
   .cal-list{display:grid;gap:8px}
   .cal-row{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
   .cal-row.past{opacity:.6}
@@ -137,8 +120,6 @@
   .badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:10px;letter-spacing:.5px}
   .badge.green{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.2)}
   .badge.yellow{background:rgba(245,158,11,.12);color:var(--yellow);border:1px solid rgba(245,158,11,.2)}
-
-  /* CUENTA */
   .cuenta-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
   .sum-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
   .sum-card .s-label{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
@@ -146,7 +127,6 @@
   .sum-card .s-value.green{color:var(--green)}
   .sum-card .s-value.yellow{color:var(--yellow)}
   .sum-card .s-value.red{color:var(--red)}
-
   .retiro-form{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
   .retiro-form .form-group{margin:0;flex:1;min-width:140px}
   .btn-add{background:var(--green);color:#000;border:none;border-radius:6px;padding:10px 18px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:opacity .2s}
@@ -156,8 +136,6 @@
   .retiro-info .r-date{font-size:12px;color:var(--text3);font-family:'IBM Plex Mono',monospace}
   .retiro-info .r-desc{font-size:13px;margin-top:2px}
   .retiro-monto{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:var(--red)}
-
-  /* ADMIN NUEVO CLIENTE */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center}
   .modal-overlay.open{display:flex}
   .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;width:100%;max-width:420px}
@@ -165,31 +143,24 @@
   .modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
   .btn-cancel{background:transparent;border:1px solid var(--border);border-radius:6px;padding:8px 16px;color:var(--text2);font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif}
   .btn-save{background:var(--accent);color:#000;border:none;border-radius:6px;padding:8px 16px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
-
-  /* ADMIN VIEW CLIENT */
   .back-btn{display:flex;align-items:center;gap:6px;color:var(--text2);font-size:13px;cursor:pointer;margin-bottom:20px;background:none;border:none;font-family:'IBM Plex Sans',sans-serif;padding:0}
   .back-btn:hover{color:var(--accent)}
-
   .empty{text-align:center;padding:60px 20px;color:var(--text3);font-size:14px}
   .empty-icon{font-size:32px;margin-bottom:10px}
-
   .header-actions{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
   .btn-new{background:var(--accent);color:#000;border:none;border-radius:6px;padding:8px 16px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s}
   .btn-new:hover{opacity:.85}
-
   .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-size:13px;z-index:200;animation:slideIn .3s ease;display:none}
   .toast.show{display:block}
   .toast.ok{border-color:var(--green);color:var(--green)}
   .toast.err{border-color:var(--red);color:var(--red)}
   @keyframes slideIn{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
-
   input[type=number]::-webkit-outer-spin-button,
   input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">Control</div>
@@ -207,7 +178,6 @@
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
   <div class="sidebar">
     <div class="sidebar-logo">
@@ -237,7 +207,6 @@
   <div class="main" id="main-content"></div>
 </div>
 
-<!-- MODAL NUEVO CLIENTE -->
 <div class="modal-overlay" id="modal-cliente">
   <div class="modal">
     <div class="modal-title">Nuevo cliente</div>
@@ -276,9 +245,15 @@ let currentSection = 'cierres';
 let viewingClientId = null;
 
 async function sb(path, opts={}) {
+  const {headers: extraHeaders, ...restOpts} = opts;
   const r = await fetch(SUPABASE_URL+'/rest/v1/'+path, {
-    headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,...(opts.headers||{})},
-    ...opts
+    ...restOpts,
+    headers:{
+      'Content-Type':'application/json',
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer '+SUPABASE_KEY,
+      ...(extraHeaders||{})
+    }
   });
   if (!r.ok) { const e=await r.text(); throw new Error(e); }
   return r.status===204?null:r.json();
@@ -303,9 +278,8 @@ async function doLogin() {
   try {
     const rows = await db.getUser(u);
     if (!rows||!rows[0]) return showErr('Usuario no encontrado');
-    const user = rows[0];
-    if (user.password !== p) return showErr('Contraseña incorrecta');
-    session = user;
+    if (rows[0].password !== p) return showErr('Contraseña incorrecta');
+    session = rows[0];
     startApp();
   } catch(e) { showErr('Error: '+e.message); }
 }
@@ -380,11 +354,7 @@ async function renderClientes(el) {
       </div>
     </div>
     <div class="clients-grid">`;
-
-  if (!users.length) {
-    html += `<div class="empty"><div class="empty-icon">👥</div>No hay clientes aún. Creá el primero.</div>`;
-  }
-
+  if (!users.length) html += `<div class="empty"><div class="empty-icon">👥</div>No hay clientes aún. Creá el primero.</div>`;
   for (const u of users) {
     let cierres=[], retiros=[];
     try { cierres = await db.getCierres(u.client_id); } catch(e){}
@@ -427,21 +397,19 @@ function verCliente(cid, nombre, comision) {
 function renderCierres(el, cierres, cid) {
   const comision = session.role==='client' ? session.comision : (session._viewComision||0.095);
   const nombre = session.role==='client' ? session.nombre : session._viewNombre;
-  let html = ``;
+  let html = '';
   if (session.role==='admin' && viewingClientId) {
     html += `<button class="back-btn" onclick="goBack()">← Volver a clientes</button>`;
     html += `<div class="page-header"><div class="page-title">${nombre}</div><div class="page-sub">Comisión: ${(comision*100).toFixed(1)}%</div></div>`;
   } else {
     html += `<div class="page-header"><div class="page-title">Cierres de lote</div><div class="page-sub">Comisión aplicada: ${(comision*100).toFixed(1)}%</div></div>`;
   }
-
   html += `
     <div class="tabs">
       <button class="tab active" onclick="switchTab(this,'tab-lista')">Lista</button>
       <button class="tab" onclick="switchTab(this,'tab-subir')">+ Subir cierre</button>
     </div>
     <div id="tab-lista">`;
-
   if (!cierres.length) {
     html += `<div class="empty"><div class="empty-icon">📋</div>Sin cierres cargados aún</div>`;
   } else {
@@ -476,28 +444,13 @@ function renderCierres(el, cierres, cid) {
           </div>
           <div class="cierre-body" id="c-${c.id}">
             <div class="detail-grid">
-              <div class="detail-box">
-                <div class="d-label">QR / Débito</div>
-                <div class="d-value">${fmt(c.qr_debito||0)}</div>
-              </div>
-              <div class="detail-box">
-                <div class="d-label">Crédito</div>
-                <div class="d-value">${fmt(c.credito||0)}</div>
-              </div>
-              <div class="detail-box">
-                <div class="d-label">Total bruto</div>
-                <div class="d-value">${fmt(c.total_pesos||0)}</div>
-              </div>
+              <div class="detail-box"><div class="d-label">QR / Débito</div><div class="d-value">${fmt(c.qr_debito||0)}</div></div>
+              <div class="detail-box"><div class="d-label">Crédito</div><div class="d-value">${fmt(c.credito||0)}</div></div>
+              <div class="detail-box"><div class="d-label">Total bruto</div><div class="d-value">${fmt(c.total_pesos||0)}</div></div>
             </div>
             <div class="acred-row">
-              <div class="acred-badge ${qrOk?'ok':'pending'}">
-                <div class="dot"></div>
-                QR/Débito · ${c.fecha_acred_qr||'—'} ${qrOk?'✓ Acreditado':'Pendiente'}
-              </div>
-              <div class="acred-badge ${credOk?'ok':'pending'}">
-                <div class="dot"></div>
-                Crédito · ${c.fecha_acred_credito||'—'} ${credOk?'✓ Acreditado':'Pendiente'}
-              </div>
+              <div class="acred-badge ${qrOk?'ok':'pending'}"><div class="dot"></div>QR/Débito · ${c.fecha_acred_qr||'—'} ${qrOk?'✓ Acreditado':'Pendiente'}</div>
+              <div class="acred-badge ${credOk?'ok':'pending'}"><div class="dot"></div>Crédito · ${c.fecha_acred_credito||'—'} ${credOk?'✓ Acreditado':'Pendiente'}</div>
             </div>
             <button class="btn-del" onclick="delCierre('${c.id}')">Eliminar cierre</button>
           </div>
@@ -518,7 +471,6 @@ function renderCierres(el, cierres, cid) {
       <input type="file" id="file-input" accept="image/*" multiple onchange="handleFiles(this.files,'${cid}',${comision})">
       <div class="processing-list" id="proc-list"></div>
     </div>`;
-
   el.innerHTML = html;
 }
 
@@ -543,11 +495,8 @@ function switchTab(btn, tabId) {
 
 async function delCierre(id) {
   if (!confirm('¿Eliminar este cierre?')) return;
-  try {
-    await db.deleteCierre(id);
-    showToast('Cierre eliminado','ok');
-    renderSection();
-  } catch(e) { showToast('Error: '+e.message,'err'); }
+  try { await db.deleteCierre(id); showToast('Cierre eliminado','ok'); renderSection(); }
+  catch(e) { showToast('Error: '+e.message,'err'); }
 }
 
 function handleDrop(e) {
@@ -576,20 +525,11 @@ async function handleFiles(files, cid, comision) {
       const fechaAcredQr = data.qrDebito>0 ? addDays(data.fecha,2) : '';
       const fechaAcredCredito = data.credito>0 ? addDays(data.fecha,18) : '';
       await db.insertCierre({
-        client_id: cid,
-        terminal: data.terminal||'',
-        fecha: data.fecha||'',
-        hora: data.hora||'',
-        nro_lote: data.nroLote||'',
-        nro_comercio: data.nroComercio||'',
-        qr_debito: data.qrDebito||0,
-        credito: data.credito||0,
-        total_pesos: total,
-        comision_pct: comision,
-        comision_monto: comMonto,
-        saldo_neto: neto,
-        fecha_acred_qr: fechaAcredQr,
-        fecha_acred_credito: fechaAcredCredito,
+        client_id:cid, terminal:data.terminal||'', fecha:data.fecha||'', hora:data.hora||'',
+        nro_lote:data.nroLote||'', nro_comercio:data.nroComercio||'',
+        qr_debito:data.qrDebito||0, credito:data.credito||0, total_pesos:total,
+        comision_pct:comision, comision_monto:comMonto, saldo_neto:neto,
+        fecha_acred_qr:fechaAcredQr, fecha_acred_credito:fechaAcredCredito,
       });
       document.getElementById(itemId).querySelector('.proc-status').className='proc-status ok';
       document.getElementById(itemId).querySelector('.proc-status').textContent='✓ Cargado — '+fmt(neto)+' neto';
@@ -610,8 +550,7 @@ async function extractFromImage(base64, mediaType) {
       'anthropic-dangerous-direct-browser-access':'true'
     },
     body: JSON.stringify({
-      model:'claude-sonnet-4-20250514',
-      max_tokens:600,
+      model:'claude-sonnet-4-20250514', max_tokens:600,
       messages:[{role:'user',content:[
         {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
         {type:'text',text:`Lee este ticket de cierre de lote de posnet argentino. Responde SOLO con JSON valido sin texto extra ni backticks:
@@ -626,20 +565,16 @@ async function extractFromImage(base64, mediaType) {
   });
   const r = await resp.json();
   const text = r.content.map(b=>b.text||'').join('');
-  const clean = text.replace(/```json|```/g,'').trim();
-  return JSON.parse(clean);
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
 }
 
 function renderCalendario(el, cierres) {
   const hoy = todayStr();
   const eventos = [];
   for (const c of cierres) {
-    if (c.qr_debito>0 && c.fecha_acred_qr) {
-      eventos.push({fecha:c.fecha_acred_qr, monto:parseFloat(c.qr_debito)-Math.round(parseFloat(c.qr_debito)*c.comision_pct), tipo:'QR/Débito', terminal:c.terminal, lote:c.nro_lote});
-    }
-    if (c.credito>0 && c.fecha_acred_credito) {
-      eventos.push({fecha:c.fecha_acred_credito, monto:parseFloat(c.credito)-Math.round(parseFloat(c.credito)*c.comision_pct), tipo:'Crédito', terminal:c.terminal, lote:c.nro_lote});
-    }
+    const com = parseFloat(c.comision_pct||0);
+    if (c.qr_debito>0 && c.fecha_acred_qr) eventos.push({fecha:c.fecha_acred_qr, monto:parseFloat(c.qr_debito)-Math.round(parseFloat(c.qr_debito)*com), tipo:'QR/Débito', terminal:c.terminal, lote:c.nro_lote});
+    if (c.credito>0 && c.fecha_acred_credito) eventos.push({fecha:c.fecha_acred_credito, monto:parseFloat(c.credito)-Math.round(parseFloat(c.credito)*com), tipo:'Crédito', terminal:c.terminal, lote:c.nro_lote});
   }
   const byFecha = {};
   for (const e of eventos) {
@@ -656,10 +591,7 @@ function renderCalendario(el, cierres) {
     const detail = gr.items.map(i=>`TRM ${i.terminal} Lote#${i.lote} (${i.tipo})`).join(' · ');
     html += `
       <div class="cal-row ${past?'past':''}">
-        <div>
-          <div class="cal-date">${formatFecha(f)}</div>
-          <div class="cal-detail">${detail}</div>
-        </div>
+        <div><div class="cal-date">${formatFecha(f)}</div><div class="cal-detail">${detail}</div></div>
         <div style="display:flex;align-items:center;gap:12px">
           <div class="cal-monto">${fmt(gr.total)}</div>
           <span class="badge ${past?'green':'yellow'}">${past?'✓ Acreditado':'Pendiente'}</span>
@@ -679,32 +611,14 @@ function renderCuenta(el, cierres, retiros, cid) {
   let html = `
     <div class="page-header"><div class="page-title">Cuenta corriente</div></div>
     <div class="cuenta-summary">
-      <div class="sum-card">
-        <div class="s-label">Saldo disponible</div>
-        <div class="s-value ${saldo>=0?'green':'red'}">${fmt(saldo)}</div>
-      </div>
-      <div class="sum-card">
-        <div class="s-label">Acreditado total</div>
-        <div class="s-value">${fmt(acreditado)}</div>
-      </div>
-      <div class="sum-card">
-        <div class="s-label">Pendiente de cobro</div>
-        <div class="s-value yellow">${fmt(pendiente)}</div>
-      </div>
+      <div class="sum-card"><div class="s-label">Saldo disponible</div><div class="s-value ${saldo>=0?'green':'red'}">${fmt(saldo)}</div></div>
+      <div class="sum-card"><div class="s-label">Acreditado total</div><div class="s-value">${fmt(acreditado)}</div></div>
+      <div class="sum-card"><div class="s-label">Pendiente de cobro</div><div class="s-value yellow">${fmt(pendiente)}</div></div>
     </div>
     <div class="retiro-form">
-      <div class="form-group">
-        <label>Fecha</label>
-        <input type="date" id="ret-fecha" value="${hoy}">
-      </div>
-      <div class="form-group">
-        <label>Monto</label>
-        <input type="number" id="ret-monto" placeholder="0">
-      </div>
-      <div class="form-group" style="flex:2">
-        <label>Descripción</label>
-        <input type="text" id="ret-desc" placeholder="Retiro, pago, etc.">
-      </div>
+      <div class="form-group"><label>Fecha</label><input type="date" id="ret-fecha" value="${hoy}"></div>
+      <div class="form-group"><label>Monto</label><input type="number" id="ret-monto" placeholder="0"></div>
+      <div class="form-group" style="flex:2"><label>Descripción</label><input type="text" id="ret-desc" placeholder="Retiro, pago, etc."></div>
       <button class="btn-add" onclick="addRetiro('${cid}')">Registrar retiro</button>
     </div>
     <div class="retiros-list">`;
@@ -712,10 +626,7 @@ function renderCuenta(el, cierres, retiros, cid) {
   for (const r of retiros) {
     html += `
       <div class="retiro-row">
-        <div class="retiro-info">
-          <div class="r-date">${r.fecha||''}</div>
-          <div class="r-desc">${r.descripcion||'Retiro'}</div>
-        </div>
+        <div class="retiro-info"><div class="r-date">${r.fecha||''}</div><div class="r-desc">${r.descripcion||'Retiro'}</div></div>
         <div style="display:flex;align-items:center;gap:12px">
           <div class="retiro-monto">- ${fmt(r.monto)}</div>
           <button class="btn-del" onclick="delRetiro('${r.id}')">×</button>
@@ -731,20 +642,14 @@ async function addRetiro(cid) {
   const monto = parseFloat(document.getElementById('ret-monto').value);
   const desc = document.getElementById('ret-desc').value.trim()||'Retiro';
   if (!fecha||!monto||monto<=0) return showToast('Completá fecha y monto','err');
-  try {
-    await db.insertRetiro({client_id:cid, fecha, monto, descripcion:desc});
-    showToast('Retiro registrado','ok');
-    renderSection();
-  } catch(e) { showToast('Error: '+e.message,'err'); }
+  try { await db.insertRetiro({client_id:cid,fecha,monto,descripcion:desc}); showToast('Retiro registrado','ok'); renderSection(); }
+  catch(e) { showToast('Error: '+e.message,'err'); }
 }
 
 async function delRetiro(id) {
   if (!confirm('¿Eliminar este retiro?')) return;
-  try {
-    await db.deleteRetiro(id);
-    showToast('Retiro eliminado','ok');
-    renderSection();
-  } catch(e) { showToast('Error: '+e.message,'err'); }
+  try { await db.deleteRetiro(id); showToast('Retiro eliminado','ok'); renderSection(); }
+  catch(e) { showToast('Error: '+e.message,'err'); }
 }
 
 function openModal() { document.getElementById('modal-cliente').classList.add('open'); }
@@ -758,25 +663,16 @@ async function saveNewClient() {
   if (!nombre||!username||!password) return showToast('Completá todos los campos','err');
   const client_id = 'c_'+Date.now();
   try {
-    await db.insertUser({nombre, username, password, role:'client', comision: comision/100, client_id});
-    showToast('Cliente creado','ok');
-    closeModal();
-    renderSection();
+    await db.insertUser({nombre,username,password,role:'client',comision:comision/100,client_id});
+    showToast('Cliente creado','ok'); closeModal(); renderSection();
   } catch(e) { showToast('Error: '+e.message,'err'); }
 }
 
 function toBase64(file) {
-  return new Promise((res,rej)=>{
-    const r = new FileReader();
-    r.onload = ()=>res(r.result.split(',')[1]);
-    r.onerror = ()=>rej(new Error('Error leyendo archivo'));
-    r.readAsDataURL(file);
-  });
+  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=()=>rej(new Error('Error leyendo archivo')); r.readAsDataURL(file); });
 }
 
-function todayStr() {
-  return new Date().toISOString().split('T')[0];
-}
+function todayStr() { return new Date().toISOString().split('T')[0]; }
 
 function addDays(fechaDDMMYYYY, days) {
   if (!fechaDDMMYYYY) return '';
@@ -784,16 +680,12 @@ function addDays(fechaDDMMYYYY, days) {
   if (fechaDDMMYYYY.includes('/')) {
     const [dd,mm,yyyy] = fechaDDMMYYYY.split('/');
     d = new Date(parseInt(yyyy), parseInt(mm)-1, parseInt(dd));
-  } else {
-    d = new Date(fechaDDMMYYYY);
-  }
+  } else { d = new Date(fechaDDMMYYYY); }
   d.setDate(d.getDate()+days);
   return d.toISOString().split('T')[0];
 }
 
-function fmt(n) {
-  return '$'+Math.round(n).toLocaleString('es-AR');
-}
+function fmt(n) { return '$'+Math.round(n).toLocaleString('es-AR'); }
 
 function formatFecha(iso) {
   if (!iso) return '—';
@@ -824,8 +716,7 @@ function calcPendiente(cierres, hoy) {
 
 function showToast(msg, type='ok') {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show '+type;
+  t.textContent = msg; t.className = 'toast show '+type;
   setTimeout(()=>t.classList.remove('show'),3000);
 }
 </script>
