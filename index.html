@@ -14,7 +14,6 @@
     --surface2:#1a2235;
     --border:#1e2d45;
     --accent:#00d4ff;
-    --accent2:#7c3aed;
     --green:#10b981;
     --yellow:#f59e0b;
     --red:#ef4444;
@@ -550,7 +549,8 @@ async function extractFromImage(base64, mediaType) {
       'anthropic-dangerous-direct-browser-access':'true'
     },
     body: JSON.stringify({
-      model:'claude-sonnet-4-20250514', max_tokens:600,
+      model:'claude-haiku-4-5-20251001',
+      max_tokens:600,
       messages:[{role:'user',content:[
         {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
         {type:'text',text:`Lee este ticket de cierre de lote de posnet argentino. Responde SOLO con JSON valido sin texto extra ni backticks:
@@ -563,7 +563,12 @@ async function extractFromImage(base64, mediaType) {
       ]}]
     })
   });
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error('API error: '+err);
+  }
   const r = await resp.json();
+  if (!r.content || !r.content.length) throw new Error('Respuesta vacía de la API');
   const text = r.content.map(b=>b.text||'').join('');
   return JSON.parse(text.replace(/```json|```/g,'').trim());
 }
