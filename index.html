@@ -237,7 +237,7 @@
 <script>
 const SUPABASE_URL = 'https://wwoymrlwsagwqakxxujk.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3b3ltcmx3c2Fnd3Fha3h4dWprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0OTg2NTEsImV4cCI6MjA5MzA3NDY1MX0.f-d6mzXafLNzw6nYM_Ijjq7vNESw_UdRkv8VgxLPuQg';
-const ANTHROPIC_KEY = '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';
+const ANTHROPIC_KEY = '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';
 
 let session = null;
 let currentSection = 'cierres';
@@ -565,10 +565,10 @@ async function extractFromImage(base64, mediaType) {
   });
   if (!resp.ok) {
     const err = await resp.text();
-    throw new Error('API error: '+err);
+    throw new Error('API error '+resp.status+': '+err);
   }
   const r = await resp.json();
-  if (!r.content || !r.content.length) throw new Error('Respuesta vacía de la API');
+  if (!r.content||!r.content.length) throw new Error('Respuesta vacía de la API');
   const text = r.content.map(b=>b.text||'').join('');
   return JSON.parse(text.replace(/```json|```/g,'').trim());
 }
