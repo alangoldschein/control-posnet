@@ -5,142 +5,164 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Control Posnet</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
   *{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#1e2d45;--accent:#00d4ff;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--text:#e2e8f0;--text2:#94a3b8;--text3:#475569;}
-  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh}
-  #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-  .login-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px;width:100%;max-width:380px}
-  .login-logo{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px}
-  .login-title{font-size:22px;font-weight:600;margin-bottom:32px}
-  .form-group{margin-bottom:16px}
-  .form-group label{display:block;font-size:11px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
-  .form-group input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
-  .form-group input:focus{border-color:var(--accent)}
-  .btn-primary{width:100%;background:var(--accent);color:#000;border:none;border-radius:6px;padding:12px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;transition:opacity .2s}
-  .btn-primary:hover{opacity:.85}
-  .error-msg{color:var(--red);font-size:12px;margin-top:12px;text-align:center}
+  :root{
+    --bg:#08090d;--surface:#0f1117;--surface2:#161820;--surface3:#1d1f28;
+    --border:#22242f;--border2:#2a2d3a;
+    --accent:#3b82f6;--accent2:#60a5fa;
+    --green:#22c55e;--green2:#16a34a;
+    --yellow:#f59e0b;--red:#ef4444;
+    --text:#f0f1f5;--text2:#8b8fa8;--text3:#4b4f65;
+    --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;font-size:14px}
+  #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+  .login-box{width:360px;padding:40px}
+  .login-brand{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:4px;text-transform:uppercase;margin-bottom:6px}
+  .login-title{font-size:24px;font-weight:600;margin-bottom:4px}
+  .login-sub{font-size:13px;color:var(--text2);margin-bottom:32px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:11px;color:var(--text2);letter-spacing:.5px;margin-bottom:5px;text-transform:uppercase}
+  .field input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:14px;outline:none;transition:border-color .15s}
+  .field input:focus{border-color:var(--accent)}
+  .btn-login{width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:11px;font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;margin-top:4px;transition:background .15s}
+  .btn-login:hover{background:var(--accent2)}
+  .err{color:var(--red);font-size:12px;margin-top:10px;text-align:center;min-height:16px}
   #app{display:none;min-height:100vh}
-  .sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;padding:20px 0}
-  .sidebar-logo{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
-  .sidebar-logo .brand{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:3px}
-  .sidebar-logo .title{font-size:15px;font-weight:600;margin-top:2px}
-  .sidebar-user{padding:12px 20px;margin-bottom:8px}
-  .sidebar-user .role{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
-  .sidebar-user .name{font-size:13px;font-weight:500;color:var(--text2);margin-top:2px}
-  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;border-left:2px solid transparent}
+  .sidebar{width:200px;background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column}
+  .sb-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+  .sb-brand{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:3px;text-transform:uppercase}
+  .sb-title{font-size:14px;font-weight:600;margin-top:2px}
+  .sb-user{padding:12px 18px;margin-bottom:8px}
+  .sb-role{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+  .sb-name{font-size:12px;color:var(--text2);margin-top:2px}
+  .nav{padding:0 8px}
+  .nav-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .12s;margin-bottom:2px}
   .nav-item:hover{color:var(--text);background:var(--surface2)}
-  .nav-item.active{color:var(--accent);border-left-color:var(--accent);background:var(--surface2)}
-  .nav-icon{font-size:15px;width:18px;text-align:center}
-  .sidebar-bottom{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border)}
-  .btn-logout{width:100%;background:transparent;border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all .2s}
-  .btn-logout:hover{border-color:var(--red);color:var(--red)}
-  .main{margin-left:220px;padding:28px 32px;min-height:100vh}
-  .page-header{margin-bottom:28px}
-  .page-title{font-size:20px;font-weight:600}
-  .page-sub{font-size:13px;color:var(--text2);margin-top:4px}
-  .clients-grid{display:grid;gap:12px}
-  .client-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s;cursor:pointer}
-  .client-card:hover{border-color:var(--accent)}
-  .client-info .client-name{font-weight:600;font-size:15px}
-  .client-info .client-meta{font-size:12px;color:var(--text2);margin-top:3px;font-family:'IBM Plex Mono',monospace}
-  .client-stats{display:flex;gap:24px;align-items:center}
-  .stat-item{text-align:right}
-  .stat-label{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
-  .stat-value{font-size:15px;font-weight:600;font-family:'IBM Plex Mono',monospace;margin-top:2px}
-  .stat-value.green{color:var(--green)}
-  .stat-value.yellow{color:var(--yellow)}
-  .btn-view{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 14px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all .2s}
-  .btn-view:hover{border-color:var(--accent);color:var(--accent)}
-  .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px;width:fit-content}
-  .tab{padding:7px 18px;border-radius:6px;font-size:13px;cursor:pointer;color:var(--text2);transition:all .2s;border:none;background:transparent;font-family:'IBM Plex Sans',sans-serif}
-  .tab.active{background:var(--accent);color:#000;font-weight:600}
-  .upload-zone{border:2px dashed var(--border);border-radius:10px;padding:40px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface)}
-  .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--surface2)}
-  .upload-icon{font-size:36px;margin-bottom:12px}
-  .upload-text{font-size:14px;color:var(--text2)}
-  .upload-sub{font-size:12px;color:var(--text3);margin-top:4px}
-  #file-input{display:none}
-  .processing-list{display:grid;gap:8px;margin-top:16px}
-  .proc-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px}
-  .proc-icon{font-size:18px}
-  .proc-name{font-size:13px;flex:1}
-  .proc-status{font-size:12px;font-family:'IBM Plex Mono',monospace}
-  .proc-status.ok{color:var(--green)}
-  .proc-status.err{color:var(--red)}
-  .proc-status.loading{color:var(--yellow)}
-  .spinner{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .cierres-list{display:grid;gap:10px}
-  .cierre-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-  .cierre-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
-  .cierre-header:hover{background:var(--surface2)}
-  .cierre-left{display:flex;align-items:center;gap:14px}
-  .cierre-terminal{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent);background:rgba(0,212,255,.08);padding:3px 8px;border-radius:4px}
-  .cierre-id{font-size:13px;font-weight:500}
-  .cierre-date{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px}
-  .cierre-right{display:flex;gap:20px;align-items:center}
-  .cierre-amount{text-align:right}
-  .cierre-amount .label{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
-  .cierre-amount .value{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;margin-top:1px}
-  .cierre-amount .value.green{color:var(--green)}
-  .cierre-body{padding:16px 18px;border-top:1px solid var(--border);display:none}
-  .cierre-body.open{display:block}
-  .detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
-  .detail-box{background:var(--bg);border-radius:8px;padding:12px 14px}
-  .detail-box .d-label{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
-  .detail-box .d-value{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;margin-top:4px}
-  .acred-row{display:flex;gap:10px;font-size:12px;flex-wrap:wrap}
-  .acred-badge{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px}
-  .acred-badge.ok{border-color:var(--green);color:var(--green)}
-  .acred-badge.pending{border-color:var(--yellow);color:var(--yellow)}
-  .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
-  .btn-del{background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text3);font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;margin-top:12px;transition:all .2s}
-  .btn-del:hover{border-color:var(--red);color:var(--red)}
-  .cal-list{display:grid;gap:8px}
-  .cal-row{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
-  .cal-row.past{opacity:.6}
-  .cal-date{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600}
-  .cal-detail{font-size:12px;color:var(--text2);margin-top:3px}
-  .cal-monto{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600}
-  .badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:10px;letter-spacing:.5px}
-  .badge.green{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.2)}
-  .badge.yellow{background:rgba(245,158,11,.12);color:var(--yellow);border:1px solid rgba(245,158,11,.2)}
-  .cuenta-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
-  .sum-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
-  .sum-card .s-label{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
-  .sum-card .s-value{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;margin-top:6px}
-  .sum-card .s-value.green{color:var(--green)}
-  .sum-card .s-value.yellow{color:var(--yellow)}
-  .sum-card .s-value.red{color:var(--red)}
-  .retiro-form{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
-  .retiro-form .form-group{margin:0;flex:1;min-width:140px}
-  .btn-add{background:var(--green);color:#000;border:none;border-radius:6px;padding:10px 18px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:opacity .2s}
-  .btn-add:hover{opacity:.85}
-  .retiros-list{display:grid;gap:8px}
-  .retiro-row{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
-  .retiro-info .r-date{font-size:12px;color:var(--text3);font-family:'IBM Plex Mono',monospace}
-  .retiro-info .r-desc{font-size:13px;margin-top:2px}
-  .retiro-monto{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:var(--red)}
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center}
-  .modal-overlay.open{display:flex}
-  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;width:100%;max-width:420px}
-  .modal-title{font-size:16px;font-weight:600;margin-bottom:20px}
-  .modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
-  .btn-cancel{background:transparent;border:1px solid var(--border);border-radius:6px;padding:8px 16px;color:var(--text2);font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif}
-  .btn-save{background:var(--accent);color:#000;border:none;border-radius:6px;padding:8px 16px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
-  .back-btn{display:flex;align-items:center;gap:6px;color:var(--text2);font-size:13px;cursor:pointer;margin-bottom:20px;background:none;border:none;font-family:'IBM Plex Sans',sans-serif;padding:0}
+  .nav-item.active{color:var(--accent2);background:rgba(59,130,246,.1)}
+  .nav-icon{font-size:14px;width:16px;text-align:center}
+  .sb-bottom{margin-top:auto;padding:16px 18px;border-top:1px solid var(--border)}
+  .btn-out{width:100%;background:transparent;border:1px solid var(--border);border-radius:7px;padding:8px;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--sans);transition:all .15s}
+  .btn-out:hover{border-color:var(--red);color:var(--red)}
+  .main{margin-left:200px;padding:28px 30px;min-height:100vh}
+  .ph{margin-bottom:24px}
+  .ph-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .ph-title{font-size:18px;font-weight:600}
+  .ph-sub{font-size:12px;color:var(--text2)}
+  .cards{display:grid;gap:12px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px}
+  .card-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
+  .card-row:hover{background:var(--surface2);cursor:pointer}
+  .cl-info .cl-name{font-weight:600;font-size:14px}
+  .cl-info .cl-meta{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:2px}
+  .cl-stats{display:flex;gap:20px;align-items:center}
+  .s-item{text-align:right}
+  .s-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+  .s-val{font-family:var(--mono);font-size:14px;font-weight:500;margin-top:1px}
+  .s-val.g{color:var(--green)}
+  .s-val.y{color:var(--yellow)}
+  .btn{border:none;border-radius:7px;padding:8px 14px;font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+  .btn-blue{background:var(--accent);color:#fff}.btn-blue:hover{background:var(--accent2)}
+  .btn-ghost{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-green{background:var(--green2);color:#fff}.btn-green:hover{opacity:.85}
+  .btn-danger{background:transparent;border:1px solid var(--border);color:var(--text3);font-size:11px}.btn-danger:hover{border-color:var(--red);color:var(--red)}
+  .btn-sm{padding:5px 10px;font-size:11px}
+  .back-btn{display:flex;align-items:center;gap:5px;color:var(--text2);font-size:12px;cursor:pointer;background:none;border:none;font-family:var(--sans);margin-bottom:16px;padding:0}
   .back-btn:hover{color:var(--accent)}
-  .empty{text-align:center;padding:60px 20px;color:var(--text3);font-size:14px}
-  .empty-icon{font-size:32px;margin-bottom:10px}
-  .header-actions{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
-  .btn-new{background:var(--accent);color:#000;border:none;border-radius:6px;padding:8px 16px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s}
-  .btn-new:hover{opacity:.85}
-  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-size:13px;z-index:200;animation:slideIn .3s ease;display:none}
+  .tabs{display:flex;gap:3px;margin-bottom:20px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:3px;width:fit-content}
+  .tab{padding:6px 16px;border-radius:6px;font-size:12px;cursor:pointer;color:var(--text2);transition:all .15s;border:none;background:transparent;font-family:var(--sans)}
+  .tab.active{background:var(--accent);color:#fff;font-weight:500}
+  .upload-zone{border:2px dashed var(--border2);border-radius:10px;padding:36px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface)}
+  .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--surface2)}
+  .upload-icon{font-size:32px;margin-bottom:10px}
+  .upload-text{font-size:13px;color:var(--text2)}
+  .upload-sub{font-size:11px;color:var(--text3);margin-top:3px}
+  #file-input{display:none}
+  .confirm-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:20px;margin-bottom:12px}
+  .confirm-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .confirm-fields{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+  .cf-field{background:var(--surface2);border-radius:7px;padding:10px 12px}
+  .cf-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+  .cf-input{width:100%;background:transparent;border:none;color:var(--text);font-family:var(--mono);font-size:15px;font-weight:500;outline:none}
+  .cf-input:focus{color:var(--accent2)}
+  .cf-total{grid-column:span 2;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:7px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+  .cf-total-label{font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:.5px}
+  .cf-total-val{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--green)}
+  .confirm-actions{display:flex;gap:8px;justify-content:flex-end}
+  .cierre-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px}
+  .cierre-header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .12s}
+  .cierre-header:hover{background:var(--surface2)}
+  .cierre-left{display:flex;align-items:center;gap:12px}
+  .trm-badge{font-family:var(--mono);font-size:10px;color:var(--accent2);background:rgba(59,130,246,.1);padding:3px 7px;border-radius:4px;border:1px solid rgba(59,130,246,.2)}
+  .cierre-info .ci-title{font-size:13px;font-weight:500}
+  .cierre-info .ci-date{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:1px}
+  .cierre-right{display:flex;gap:16px;align-items:center}
+  .ca{text-align:right}
+  .ca-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px}
+  .ca-val{font-family:var(--mono);font-size:13px;font-weight:500;margin-top:1px}
+  .ca-val.g{color:var(--green)}
+  .cierre-body{padding:14px 16px;border-top:1px solid var(--border);display:none}
+  .cierre-body.open{display:block}
+  .detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+  .detail-box{background:var(--bg);border-radius:7px;padding:10px 12px}
+  .db-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px}
+  .db-val{font-family:var(--mono);font-size:15px;font-weight:500;margin-top:3px}
+  .acred-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .abadge{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border2);border-radius:16px;padding:4px 10px;font-size:11px}
+  .abadge.ok{border-color:rgba(34,197,94,.3);color:var(--green)}
+  .abadge.pend{border-color:rgba(245,158,11,.3);color:var(--yellow)}
+  .dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+  .fin-header{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+  .fin-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+  .fin-card.highlight{border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.04)}
+  .fin-card.blue{border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.04)}
+  .fin-card.yellow{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)}
+  .fin-card.red{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.04)}
+  .fc-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  .fc-val{font-family:var(--mono);font-size:20px;font-weight:600}
+  .fc-val.g{color:var(--green)}
+  .fc-val.b{color:var(--accent2)}
+  .fc-val.y{color:var(--yellow)}
+  .fc-val.r{color:var(--red)}
+  .fc-sub{font-size:11px;color:var(--text3);margin-top:3px}
+  .fin-section{margin-bottom:20px}
+  .fin-section-title{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .fin-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+  .timeline{display:grid;gap:6px}
+  .tl-row{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+  .tl-row.past{opacity:.55}
+  .tl-row.today{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.04)}
+  .tl-left .tl-date{font-family:var(--mono);font-size:12px;font-weight:500}
+  .tl-left .tl-desc{font-size:11px;color:var(--text2);margin-top:2px}
+  .tl-right{display:flex;align-items:center;gap:10px}
+  .tl-amt{font-family:var(--mono);font-size:14px;font-weight:600}
+  .badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:10px}
+  .badge.g{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+  .badge.y{background:rgba(245,158,11,.1);color:var(--yellow);border:1px solid rgba(245,158,11,.2)}
+  .badge.b{background:rgba(59,130,246,.1);color:var(--accent2);border:1px solid rgba(59,130,246,.2)}
+  .pago-form{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
+  .pago-form-title{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+  .pago-inputs{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+  .pago-inputs .field{margin:0;flex:1;min-width:120px}
+  .pagos-list{display:grid;gap:6px}
+  .pago-row{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
+  .pr-info .pr-date{font-size:11px;color:var(--text3);font-family:var(--mono)}
+  .pr-info .pr-desc{font-size:12px;margin-top:1px}
+  .pr-monto{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--red)}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:24px;width:100%;max-width:400px}
+  .modal-title{font-size:15px;font-weight:600;margin-bottom:18px}
+  .modal-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+  .spinner{width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .empty{text-align:center;padding:48px 20px;color:var(--text3);font-size:13px}
+  .empty-icon{font-size:28px;margin-bottom:8px}
+  .toast{position:fixed;bottom:20px;right:20px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 16px;font-size:12px;z-index:200;display:none}
   .toast.show{display:block}
   .toast.ok{border-color:var(--green);color:var(--green)}
   .toast.err{border-color:var(--red);color:var(--red)}
-  @keyframes slideIn{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
   input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 </style>
 </head>
@@ -148,30 +170,32 @@
 
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">Control</div>
+    <div class="login-brand">Control</div>
     <div class="login-title">Posnet B</div>
-    <div class="form-group"><label>Usuario</label><input type="text" id="login-user" placeholder="usuario" autocomplete="off"></div>
-    <div class="form-group"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••"></div>
-    <button class="btn-primary" onclick="doLogin()">Ingresar</button>
-    <div class="error-msg" id="login-err"></div>
+    <div class="login-sub">Sistema de gestión de cierres</div>
+    <div class="field"><label>Usuario</label><input type="text" id="login-user" autocomplete="off"></div>
+    <div class="field"><label>Contraseña</label><input type="password" id="login-pass"></div>
+    <button class="btn-login" onclick="doLogin()">Ingresar</button>
+    <div class="err" id="login-err"></div>
   </div>
 </div>
 
 <div id="app">
   <div class="sidebar">
-    <div class="sidebar-logo">
-      <div class="brand">Control</div>
-      <div class="title">Posnet B</div>
+    <div class="sb-logo">
+      <div class="sb-brand">Control</div>
+      <div class="sb-title">Posnet B</div>
     </div>
-    <div class="sidebar-user">
-      <div class="role" id="sb-role"></div>
-      <div class="name" id="sb-name"></div>
+    <div class="sb-user">
+      <div class="sb-role" id="sb-role"></div>
+      <div class="sb-name" id="sb-name"></div>
     </div>
-    <div class="nav-item active" onclick="showSection('cierres')" id="nav-cierres"><span class="nav-icon">📋</span> Cierres</div>
-    <div class="nav-item" onclick="showSection('calendario')" id="nav-calendario"><span class="nav-icon">📅</span> Calendario</div>
-    <div class="nav-item" onclick="showSection('cuenta')" id="nav-cuenta"><span class="nav-icon">💰</span> Cuenta corriente</div>
-    <div class="nav-item" onclick="showSection('clientes')" id="nav-clientes" style="display:none"><span class="nav-icon">👥</span> Clientes</div>
-    <div class="sidebar-bottom"><button class="btn-logout" onclick="doLogout()">Cerrar sesión</button></div>
+    <div class="nav">
+      <div class="nav-item active" onclick="showSection('cierres')" id="nav-cierres"><span class="nav-icon">📋</span> Cierres</div>
+      <div class="nav-item" onclick="showSection('financiero')" id="nav-financiero"><span class="nav-icon">💰</span> Financiero</div>
+      <div class="nav-item" onclick="showSection('clientes')" id="nav-clientes" style="display:none"><span class="nav-icon">👥</span> Clientes</div>
+    </div>
+    <div class="sb-bottom"><button class="btn-out" onclick="doLogout()">Cerrar sesión</button></div>
   </div>
   <div class="main" id="main-content"></div>
 </div>
@@ -179,13 +203,13 @@
 <div class="modal-overlay" id="modal-cliente">
   <div class="modal">
     <div class="modal-title">Nuevo cliente</div>
-    <div class="form-group"><label>Nombre</label><input type="text" id="nc-nombre" placeholder="Nombre del cliente"></div>
-    <div class="form-group"><label>Usuario</label><input type="text" id="nc-user" placeholder="usuario"></div>
-    <div class="form-group"><label>Contraseña</label><input type="text" id="nc-pass" placeholder="contraseña"></div>
-    <div class="form-group"><label>Comisión (%)</label><input type="number" id="nc-comision" placeholder="9.5" step="0.1"></div>
+    <div class="field"><label>Nombre</label><input type="text" id="nc-nombre"></div>
+    <div class="field"><label>Usuario</label><input type="text" id="nc-user"></div>
+    <div class="field"><label>Contraseña</label><input type="text" id="nc-pass"></div>
+    <div class="field"><label>Comisión (%)</label><input type="number" id="nc-comision" placeholder="9.5" step="0.1"></div>
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="btn-save" onclick="saveNewClient()">Guardar</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-blue" onclick="saveNewClient()">Guardar</button>
     </div>
   </div>
 </div>
@@ -193,36 +217,29 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SUPABASE_URL = 'https://wwoymrlwsagwqakxxujk.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3b3ltcmx3c2Fnd3Fha3h4dWprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0OTg2NTEsImV4cCI6MjA5MzA3NDY1MX0.f-d6mzXafLNzw6nYM_Ijjq7vNESw_UdRkv8VgxLPuQg';
+const SUPABASE_URL='https://wwoymrlwsagwqakxxujk.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3b3ltcmx3c2Fnd3Fha3h4dWprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0OTg2NTEsImV4cCI6MjA5MzA3NDY1MX0.f-d6mzXafLNzw6nYM_Ijjq7vNESw_UdRkv8VgxLPuQg';
+let session=null,currentSection='cierres',viewingClientId=null;
 
-let session = null;
-let currentSection = 'cierres';
-let viewingClientId = null;
-
-async function sb(path, opts={}) {
-  const {headers: extraHeaders, ...restOpts} = opts;
-  const r = await fetch(SUPABASE_URL+'/rest/v1/'+path, {
-    ...restOpts,
-    headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,...(extraHeaders||{})}
-  });
-  if (!r.ok){const e=await r.text();throw new Error(e);}
+async function sb(path,opts={}){
+  const{headers:eh,...rest}=opts;
+  const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{...rest,headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,...(eh||{})}});
+  if(!r.ok){const e=await r.text();throw new Error(e);}
   return r.status===204?null:r.json();
 }
-
-const db = {
-  getUser: u => sb(`users?username=eq.${u}&select=*`),
-  getAllUsers: () => sb('users?role=eq.client&select=*&order=nombre.asc'),
-  insertUser: d => sb('users',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(d)}),
-  getCierres: cid => sb(`cierres?client_id=eq.${cid}&select=*&order=fecha.desc,hora.desc`),
-  insertCierre: d => sb('cierres',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(d)}),
-  deleteCierre: id => sb(`cierres?id=eq.${id}`,{method:'DELETE'}),
-  getRetiros: cid => sb(`retiros?client_id=eq.${cid}&select=*&order=fecha.desc`),
-  insertRetiro: d => sb('retiros',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(d)}),
-  deleteRetiro: id => sb(`retiros?id=eq.${id}`,{method:'DELETE'}),
+const db={
+  getUser:u=>sb(`users?username=eq.${u}&select=*`),
+  getAllUsers:()=>sb('users?role=eq.client&select=*&order=nombre.asc'),
+  insertUser:d=>sb('users',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(d)}),
+  getCierres:cid=>sb(`cierres?client_id=eq.${cid}&select=*&order=fecha.desc,hora.desc`),
+  insertCierre:d=>sb('cierres',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(d)}),
+  deleteCierre:id=>sb(`cierres?id=eq.${id}`,{method:'DELETE'}),
+  getRetiros:cid=>sb(`retiros?client_id=eq.${cid}&select=*&order=fecha.desc`),
+  insertRetiro:d=>sb('retiros',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(d)}),
+  deleteRetiro:id=>sb(`retiros?id=eq.${id}`,{method:'DELETE'}),
 };
 
-async function doLogin() {
+async function doLogin(){
   const u=document.getElementById('login-user').value.trim();
   const p=document.getElementById('login-pass').value.trim();
   if(!u||!p)return;
@@ -233,8 +250,7 @@ async function doLogin() {
     session=rows[0];startApp();
   }catch(e){showErr('Error: '+e.message);}
 }
-
-function showErr(msg){document.getElementById('login-err').textContent=msg;}
+function showErr(m){document.getElementById('login-err').textContent=m;}
 document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
 function startApp(){
@@ -245,7 +261,6 @@ function startApp(){
   if(session.role==='admin'){document.getElementById('nav-clientes').style.display='flex';showSection('clientes');}
   else showSection('cierres');
 }
-
 function doLogout(){
   session=null;viewingClientId=null;
   document.getElementById('login-screen').style.display='flex';
@@ -254,120 +269,123 @@ function doLogout(){
   document.getElementById('login-pass').value='';
   document.getElementById('login-err').textContent='';
 }
-
 function showSection(sec){
   currentSection=sec;
-  ['cierres','calendario','cuenta','clientes'].forEach(s=>{
+  ['cierres','financiero','clientes'].forEach(s=>{
     const el=document.getElementById('nav-'+s);
     if(el)el.classList.toggle('active',s===sec);
   });
   renderSection();
 }
-
 async function renderSection(){
   const el=document.getElementById('main-content');
   el.innerHTML='<div class="empty"><div class="spinner"></div></div>';
   const cid=viewingClientId||(session.role==='client'?session.client_id:null);
   try{
     if(currentSection==='clientes'&&session.role==='admin')await renderClientes(el);
-    else if(currentSection==='cierres'){const cierres=cid?await db.getCierres(cid):[];renderCierres(el,cierres,cid);}
-    else if(currentSection==='calendario'){const cierres=cid?await db.getCierres(cid):[];renderCalendario(el,cierres);}
-    else if(currentSection==='cuenta'){
-      const cierres=cid?await db.getCierres(cid):[];
-      const retiros=cid?await db.getRetiros(cid):[];
-      renderCuenta(el,cierres,retiros,cid);
+    else if(currentSection==='cierres'){const c=cid?await db.getCierres(cid):[];renderCierres(el,c,cid);}
+    else if(currentSection==='financiero'){
+      const c=cid?await db.getCierres(cid):[];
+      const r=cid?await db.getRetiros(cid):[];
+      renderFinanciero(el,c,r,cid);
     }
   }catch(e){el.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div>${e.message}</div>`;}
 }
 
 async function renderClientes(el){
   const users=await db.getAllUsers();
-  let html=`<div class="page-header"><div class="header-actions"><div><div class="page-title">Clientes</div><div class="page-sub">${users.length} clientes activos</div></div><button class="btn-new" onclick="openModal()">+ Nuevo cliente</button></div></div><div class="clients-grid">`;
+  let html=`<div class="ph"><div class="ph-top"><div><div class="ph-title">Clientes</div><div class="ph-sub">${users.length} activos</div></div><button class="btn btn-blue" onclick="openModal()">+ Nuevo cliente</button></div></div><div class="cards">`;
   if(!users.length)html+=`<div class="empty"><div class="empty-icon">👥</div>No hay clientes aún.</div>`;
   for(const u of users){
     let cierres=[],retiros=[];
     try{cierres=await db.getCierres(u.client_id);}catch(e){}
     try{retiros=await db.getRetiros(u.client_id);}catch(e){}
     const hoy=todayStr();
-    const acreditado=calcAcreditado(cierres,hoy);
-    const totalRetiros=retiros.reduce((s,r)=>s+parseFloat(r.monto||0),0);
-    const saldo=acreditado-totalRetiros;
-    const pendiente=calcPendiente(cierres,hoy);
-    html+=`<div class="client-card" onclick="verCliente('${u.client_id}','${u.nombre}',${u.comision})">
-      <div class="client-info"><div class="client-name">${u.nombre}</div><div class="client-meta">@${u.username} · comisión ${(u.comision*100).toFixed(1)}%</div></div>
-      <div class="client-stats">
-        <div class="stat-item"><div class="stat-label">Saldo disponible</div><div class="stat-value green">${fmt(saldo)}</div></div>
-        <div class="stat-item"><div class="stat-label">Pendiente cobro</div><div class="stat-value yellow">${fmt(pendiente)}</div></div>
-        <button class="btn-view">Ver →</button>
-      </div></div>`;
+    const ac=calcAcreditado(cierres,hoy);
+    const tr=retiros.reduce((s,r)=>s+parseFloat(r.monto||0),0);
+    const saldo=ac-tr;
+    const pend=calcPendiente(cierres,hoy);
+    html+=`<div class="card"><div class="card-row" onclick="verCliente('${u.client_id}','${u.nombre}',${u.comision})">
+      <div class="cl-info"><div class="cl-name">${u.nombre}</div><div class="cl-meta">@${u.username} · ${(u.comision*100).toFixed(1)}% comisión</div></div>
+      <div class="cl-stats">
+        <div class="s-item"><div class="s-lbl">Saldo</div><div class="s-val g">${fmt(saldo)}</div></div>
+        <div class="s-item"><div class="s-lbl">Pendiente</div><div class="s-val y">${fmt(pend)}</div></div>
+        <button class="btn btn-ghost btn-sm">Ver →</button>
+      </div></div></div>`;
   }
   html+='</div>';el.innerHTML=html;
 }
-
-function verCliente(cid,nombre,comision){viewingClientId=cid;session._viewNombre=nombre;session._viewComision=comision;showSection('cierres');}
+function verCliente(cid,nombre,comision){viewingClientId=cid;session._vNombre=nombre;session._vComision=comision;showSection('cierres');}
+function goBack(){viewingClientId=null;session._vNombre=null;session._vComision=null;showSection('clientes');}
 
 function renderCierres(el,cierres,cid){
-  const comision=session.role==='client'?session.comision:(session._viewComision||0.095);
-  const nombre=session.role==='client'?session.nombre:session._viewNombre;
+  const comision=session.role==='client'?session.comision:(session._vComision||0.095);
+  const nombre=session.role==='client'?session.nombre:session._vNombre;
   let html='';
   if(session.role==='admin'&&viewingClientId){
-    html+=`<button class="back-btn" onclick="goBack()">← Volver a clientes</button>`;
-    html+=`<div class="page-header"><div class="page-title">${nombre}</div><div class="page-sub">Comisión: ${(comision*100).toFixed(1)}%</div></div>`;
+    html+=`<button class="back-btn" onclick="goBack()">← Clientes</button>
+    <div class="ph"><div class="ph-top"><div><div class="ph-title">${nombre}</div><div class="ph-sub">Comisión: ${(comision*100).toFixed(1)}%</div></div></div></div>`;
   }else{
-    html+=`<div class="page-header"><div class="page-title">Cierres de lote</div><div class="page-sub">Comisión aplicada: ${(comision*100).toFixed(1)}%</div></div>`;
+    html+=`<div class="ph"><div class="ph-top"><div><div class="ph-title">Cierres de lote</div><div class="ph-sub">Comisión: ${(comision*100).toFixed(1)}%</div></div></div></div>`;
   }
-  html+=`<div class="tabs"><button class="tab active" onclick="switchTab(this,'tab-lista')">Lista</button><button class="tab" onclick="switchTab(this,'tab-subir')">+ Subir cierre</button></div><div id="tab-lista">`;
-  if(!cierres.length){html+=`<div class="empty"><div class="empty-icon">📋</div>Sin cierres cargados aún</div>`;}
+  html+=`<div class="tabs">
+    <button class="tab active" onclick="switchTab(this,'tab-lista')">Lista</button>
+    <button class="tab" onclick="switchTab(this,'tab-subir')">+ Subir cierre</button>
+  </div><div id="tab-lista">`;
+  if(!cierres.length)html+=`<div class="empty"><div class="empty-icon">📋</div>Sin cierres cargados</div>`;
   else{
-    html+=`<div class="cierres-list">`;
     for(const c of cierres){
-      const com=parseFloat(c.comision_monto||0);
       const neto=parseFloat(c.saldo_neto||0);
+      const com=parseFloat(c.comision_monto||0);
       const hoy=todayStr();
       const qrOk=c.fecha_acred_qr&&c.fecha_acred_qr<=hoy;
-      const credOk=c.fecha_acred_credito&&c.fecha_acred_credito<=hoy;
+      const crOk=c.fecha_acred_credito&&c.fecha_acred_credito<=hoy;
       html+=`<div class="cierre-card">
         <div class="cierre-header" onclick="toggleCierre('c-${c.id}')">
           <div class="cierre-left">
-            <div class="cierre-terminal">TRM ${c.terminal||'—'}</div>
-            <div><div class="cierre-id">Lote #${c.nro_lote||'—'} ${c.nro_comercio?'· Com. '+c.nro_comercio:''}</div><div class="cierre-date">${c.fecha||''} ${c.hora||''}</div></div>
+            <div class="trm-badge">TRM ${c.terminal||'—'}</div>
+            <div class="cierre-info">
+              <div class="ci-title">Lote #${c.nro_lote||'—'} ${c.nro_comercio?'· Com. '+c.nro_comercio:''}</div>
+              <div class="ci-date">${c.fecha||''} ${c.hora||''}</div>
+            </div>
           </div>
           <div class="cierre-right">
-            <div class="cierre-amount"><div class="label">Neto a cobrar</div><div class="value green">${fmt(neto)}</div></div>
-            <div class="cierre-amount"><div class="label">Comisión</div><div class="value">${fmt(com)}</div></div>
-            <span style="color:var(--text3);font-size:12px">▾</span>
+            <div class="ca"><div class="ca-lbl">Neto</div><div class="ca-val g">${fmt(neto)}</div></div>
+            <div class="ca"><div class="ca-lbl">Comisión</div><div class="ca-val">${fmt(com)}</div></div>
+            <span style="color:var(--text3);font-size:11px">▾</span>
           </div>
         </div>
         <div class="cierre-body" id="c-${c.id}">
           <div class="detail-grid">
-            <div class="detail-box"><div class="d-label">QR / Débito</div><div class="d-value">${fmt(c.qr_debito||0)}</div></div>
-            <div class="detail-box"><div class="d-label">Crédito</div><div class="d-value">${fmt(c.credito||0)}</div></div>
-            <div class="detail-box"><div class="d-label">Total bruto</div><div class="d-value">${fmt(c.total_pesos||0)}</div></div>
+            <div class="detail-box"><div class="db-label">QR / Débito</div><div class="db-val">${fmt(c.qr_debito||0)}</div></div>
+            <div class="detail-box"><div class="db-label">Crédito</div><div class="db-val">${fmt(c.credito||0)}</div></div>
+            <div class="detail-box"><div class="db-label">Total bruto</div><div class="db-val">${fmt(c.total_pesos||0)}</div></div>
           </div>
           <div class="acred-row">
-            <div class="acred-badge ${qrOk?'ok':'pending'}"><div class="dot"></div>QR/Débito · ${c.fecha_acred_qr||'—'} ${qrOk?'✓ Acreditado':'Pendiente'}</div>
-            <div class="acred-badge ${credOk?'ok':'pending'}"><div class="dot"></div>Crédito · ${c.fecha_acred_credito||'—'} ${credOk?'✓ Acreditado':'Pendiente'}</div>
+            <div class="abadge ${qrOk?'ok':'pend'}"><div class="dot"></div>QR/Déb · ${c.fecha_acred_qr||'—'} ${qrOk?'✓':'pendiente'}</div>
+            <div class="abadge ${crOk?'ok':'pend'}"><div class="dot"></div>Crédito · ${c.fecha_acred_credito||'—'} ${crOk?'✓':'pendiente'}</div>
           </div>
-          <button class="btn-del" onclick="delCierre('${c.id}')">Eliminar cierre</button>
+          <button class="btn btn-danger btn-sm" onclick="delCierre('${c.id}')">Eliminar</button>
         </div>
       </div>`;
     }
-    html+=`</div>`;
   }
-  html+=`</div><div id="tab-subir" style="display:none">
-    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()"
-         ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+  html+=`</div>
+  <div id="tab-subir" style="display:none">
+    <div class="upload-zone" onclick="document.getElementById('file-input').click()"
+         ondragover="event.preventDefault();this.classList.add('drag')"
+         ondragleave="this.classList.remove('drag')"
+         ondrop="handleDrop(event)">
       <div class="upload-icon">📸</div>
       <div class="upload-text">Hacé clic o arrastrá las fotos de los cierres</div>
-      <div class="upload-sub">JPG, PNG · Podés subir varios a la vez</div>
+      <div class="upload-sub">JPG, PNG · Varios a la vez</div>
     </div>
     <input type="file" id="file-input" accept="image/*" multiple onchange="handleFiles(this.files,'${cid}',${comision})">
-    <div class="processing-list" id="proc-list"></div>
+    <div id="confirm-list" style="margin-top:14px"></div>
   </div>`;
   el.innerHTML=html;
 }
 
-function goBack(){viewingClientId=null;session._viewNombre=null;session._viewComision=null;showSection('clientes');}
 function toggleCierre(id){const el=document.getElementById(id);if(el)el.classList.toggle('open');}
 function switchTab(btn,tabId){
   btn.closest('.tabs').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -376,69 +394,152 @@ function switchTab(btn,tabId){
   document.getElementById('tab-subir').style.display=tabId==='tab-subir'?'block':'none';
 }
 async function delCierre(id){
-  if(!confirm('¿Eliminar este cierre?'))return;
-  try{await db.deleteCierre(id);showToast('Cierre eliminado','ok');renderSection();}
-  catch(e){showToast('Error: '+e.message,'err');}
+  if(!confirm('¿Eliminar?'))return;
+  try{await db.deleteCierre(id);showToast('Eliminado','ok');renderSection();}
+  catch(e){showToast(e.message,'err');}
 }
 
 function handleDrop(e){
-  e.preventDefault();
-  document.getElementById('upload-zone').classList.remove('drag');
-  handleFiles(e.dataTransfer.files,viewingClientId||(session.client_id||''),session.role==='client'?session.comision:(session._viewComision||0.095));
+  e.preventDefault();e.currentTarget.classList.remove('drag');
+  const cid=viewingClientId||(session.client_id||'');
+  const com=session.role==='client'?session.comision:(session._vComision||0.095);
+  handleFiles(e.dataTransfer.files,cid,com);
 }
 
 async function handleFiles(files,cid,comision){
-  const procList=document.getElementById('proc-list');
-  if(!procList)return;
+  const list=document.getElementById('confirm-list');
+  if(!list)return;
   for(const file of files){
-    const itemId='proc-'+Date.now()+Math.random();
-    procList.innerHTML+=`<div class="proc-item" id="${itemId}"><span class="proc-icon">🖼️</span><span class="proc-name">${file.name}</span><span class="proc-status loading"><span class="spinner"></span> Procesando...</span></div>`;
+    const uid='cf-'+Date.now()+Math.random().toString(36).slice(2);
+    const div=document.createElement('div');
+    div.className='confirm-card';div.id=uid;
+    div.innerHTML=`<div class="confirm-title"><span class="spinner"></span> Leyendo ${file.name}...</div>`;
+    list.appendChild(div);
     try{
       const base64=await toBase64(file);
       const data=await extractFromImage(base64,file.type);
-      const total=parseFloat(data.totalPesos||0);
-      const comMonto=Math.round(total*comision);
-      const neto=total-comMonto;
-      const fechaAcredQr=data.qrDebito>0?addDays(data.fecha,2):'';
-      const fechaAcredCredito=data.credito>0?addDays(data.fecha,18):'';
-      await db.insertCierre({client_id:cid,terminal:data.terminal||'',fecha:data.fecha||'',hora:data.hora||'',nro_lote:data.nroLote||'',nro_comercio:data.nroComercio||'',qr_debito:data.qrDebito||0,credito:data.credito||0,total_pesos:total,comision_pct:comision,comision_monto:comMonto,saldo_neto:neto,fecha_acred_qr:fechaAcredQr,fecha_acred_credito:fechaAcredCredito});
-      document.getElementById(itemId).querySelector('.proc-status').className='proc-status ok';
-      document.getElementById(itemId).querySelector('.proc-status').textContent='✓ Cargado — '+fmt(neto)+' neto';
+      renderConfirmCard(div,data,cid,comision,file.name);
     }catch(e){
-      document.getElementById(itemId).querySelector('.proc-status').className='proc-status err';
-      document.getElementById(itemId).querySelector('.proc-status').textContent='Error: '+e.message;
+      div.innerHTML=`<div class="confirm-title" style="color:var(--red)">❌ Error: ${e.message}</div>`;
     }
   }
 }
 
+function renderConfirmCard(div,data,cid,comision,filename){
+  const total=parseFloat(data.totalPesos||0);
+  const comMonto=Math.round(total*comision);
+  const neto=total-comMonto;
+  div.innerHTML=`
+    <div class="confirm-title">✓ ${filename} — revisá y confirmá</div>
+    <div class="confirm-fields">
+      <div class="cf-field"><div class="cf-label">Terminal</div><input class="cf-input" id="${div.id}-terminal" value="${data.terminal||''}"></div>
+      <div class="cf-field"><div class="cf-label">Fecha</div><input class="cf-input" id="${div.id}-fecha" value="${data.fecha||''}"></div>
+      <div class="cf-field"><div class="cf-label">Hora</div><input class="cf-input" id="${div.id}-hora" value="${data.hora||''}"></div>
+      <div class="cf-field"><div class="cf-label">N° Lote</div><input class="cf-input" id="${div.id}-lote" value="${data.nroLote||''}"></div>
+      <div class="cf-field"><div class="cf-label">QR / Débito $</div><input class="cf-input" type="number" id="${div.id}-qr" value="${data.qrDebito||0}" oninput="recalcTotal('${div.id}',${comision})"></div>
+      <div class="cf-field"><div class="cf-label">Crédito $</div><input class="cf-input" type="number" id="${div.id}-cred" value="${data.credito||0}" oninput="recalcTotal('${div.id}',${comision})"></div>
+      <div class="cf-total">
+        <div>
+          <div class="cf-total-label">Neto a cobrar</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Bruto: <span id="${div.id}-bruto">${fmt(total)}</span> · Comisión (${(comision*100).toFixed(1)}%): <span id="${div.id}-com">${fmt(comMonto)}</span></div>
+        </div>
+        <div class="cf-total-val" id="${div.id}-neto">${fmt(neto)}</div>
+      </div>
+    </div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost btn-sm" onclick="this.closest('.confirm-card').remove()">Descartar</button>
+      <button class="btn btn-green btn-sm" onclick="guardarCierre('${div.id}','${cid}',${comision})">✓ Guardar cierre</button>
+    </div>`;
+}
+
+function recalcTotal(uid,comision){
+  const qr=parseFloat(document.getElementById(uid+'-qr').value)||0;
+  const cred=parseFloat(document.getElementById(uid+'-cred').value)||0;
+  const total=qr+cred;
+  const comMonto=Math.round(total*comision);
+  const neto=total-comMonto;
+  document.getElementById(uid+'-bruto').textContent=fmt(total);
+  document.getElementById(uid+'-com').textContent=fmt(comMonto);
+  document.getElementById(uid+'-neto').textContent=fmt(neto);
+}
+
+async function guardarCierre(uid,cid,comision){
+  const terminal=document.getElementById(uid+'-terminal').value;
+  const fecha=document.getElementById(uid+'-fecha').value;
+  const hora=document.getElementById(uid+'-hora').value;
+  const lote=document.getElementById(uid+'-lote').value;
+  const qr=parseFloat(document.getElementById(uid+'-qr').value)||0;
+  const cred=parseFloat(document.getElementById(uid+'-cred').value)||0;
+  const total=qr+cred;
+  const comMonto=Math.round(total*comision);
+  const neto=total-comMonto;
+  const fechaAcredQr=qr>0?addDays(fecha,2):'';
+  const fechaAcredCred=cred>0?addDays(fecha,18):'';
+  try{
+    await db.insertCierre({client_id:cid,terminal,fecha,hora,nro_lote:lote,nro_comercio:'',qr_debito:qr,credito:cred,total_pesos:total,comision_pct:comision,comision_monto:comMonto,saldo_neto:neto,fecha_acred_qr:fechaAcredQr,fecha_acred_credito:fechaAcredCred});
+    document.getElementById(uid).remove();
+    showToast('Cierre guardado','ok');
+  }catch(e){showToast(e.message,'err');}
+}
+
 async function extractFromImage(base64,mediaType){
   const resp=await fetch('/api/claude',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
+    method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      model:'claude-haiku-4-5-20251001',
-      max_tokens:600,
+      model:'claude-haiku-4-5-20251001',max_tokens:600,
       messages:[{role:'user',content:[
         {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
         {type:'text',text:`Lee este ticket de cierre de lote de posnet argentino. Responde SOLO con JSON valido sin texto extra ni backticks:
-{"terminal":"numero de terminal","fecha":"DD/MM/YYYY","hora":"HH:MM:SS","nroLote":"numero de lote","nroComercio":"numero si aparece","qrDebito":numero,"credito":numero,"totalPesos":numero}
-- hora: del encabezado del ticket
+{"terminal":"numero","fecha":"DD/MM/YYYY","hora":"HH:MM:SS","nroLote":"numero","nroComercio":"","qrDebito":numero,"credito":numero,"totalPesos":numero}
 - qrDebito: suma VISA DEBITO + MASTERCARD PREPAGO + QR + TRANSFERENCIA INMEDIATA
-- credito: MASTERCARD credito + VISA credito + AMEX (excluir debito/prepago/transferencia)
-- totalPesos: TOTALES EN PESOS (linea Co 0XX al final)
-- Numeros sin $ ni puntos de miles. Campos ausentes = 0 o "".`}
+- credito: MASTERCARD credito + VISA credito + AMEX (excluir debito/prepago/QR)
+- totalPesos: suma qrDebito + credito
+- Numeros sin $ ni puntos. Ausentes = 0 o "".`}
       ]}]
     })
   });
-  if(!resp.ok){const err=await resp.text();throw new Error('API error '+resp.status+': '+err);}
+  if(!resp.ok){const e=await resp.text();throw new Error('API '+resp.status+': '+e);}
   const r=await resp.json();
-  if(!r.content||!r.content.length)throw new Error('Respuesta vacía de la API');
+  if(!r.content?.length)throw new Error('Respuesta vacía');
   const text=r.content.map(b=>b.text||'').join('');
   return JSON.parse(text.replace(/```json|```/g,'').trim());
 }
 
-function renderCalendario(el,cierres){
-  const hoy=todayStr();const eventos=[];
+function renderFinanciero(el,cierres,retiros,cid){
+  const hoy=todayStr();
+  const nombre=session.role==='client'?session.nombre:session._vNombre;
+  const comision=session.role==='client'?session.comision:(session._vComision||0.095);
+  const acHoy=calcAcreditado(cierres,hoy);
+  const pendiente=calcPendiente(cierres,hoy);
+  const totalPagos=retiros.reduce((s,r)=>s+parseFloat(r.monto||0),0);
+  const saldo=acHoy-totalPagos;
+  const totalBruto=cierres.reduce((s,c)=>s+parseFloat(c.total_pesos||0),0);
+  const totalComision=cierres.reduce((s,c)=>s+parseFloat(c.comision_monto||0),0);
+
+  let html='';
+  if(session.role==='admin'&&viewingClientId){
+    html+=`<button class="back-btn" onclick="goBack()">← Clientes</button>
+    <div class="ph"><div class="ph-top"><div><div class="ph-title">Financiero · ${nombre}</div><div class="ph-sub">Comisión: ${(comision*100).toFixed(1)}%</div></div></div></div>`;
+  }else{
+    html+=`<div class="ph"><div class="ph-top"><div><div class="ph-title">Resumen financiero</div></div></div></div>`;
+  }
+
+  html+=`<div class="fin-header">
+    <div class="fin-card highlight"><div class="fc-label">Saldo disponible</div><div class="fc-val g">${fmt(saldo)}</div><div class="fc-sub">Acreditado menos pagos</div></div>
+    <div class="fin-card blue"><div class="fc-label">Acreditado a hoy</div><div class="fc-val b">${fmt(acHoy)}</div><div class="fc-sub">Neto ya en cuenta</div></div>
+    <div class="fin-card yellow"><div class="fc-label">Pendiente de cobro</div><div class="fc-val y">${fmt(pendiente)}</div><div class="fc-sub">Próximas acreditaciones</div></div>
+    <div class="fin-card red"><div class="fc-label">Total pagado</div><div class="fc-val r">${fmt(totalPagos)}</div><div class="fc-sub">Retiros registrados</div></div>
+  </div>`;
+
+  html+=`<div class="fin-section"><div class="fin-section-title">Resumen de comisiones</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <div class="fin-card"><div class="fc-label">Total bruto</div><div class="fc-val" style="font-size:16px">${fmt(totalBruto)}</div></div>
+      <div class="fin-card red"><div class="fc-label">Comisión cueva (${(comision*100).toFixed(1)}%)</div><div class="fc-val r" style="font-size:16px">- ${fmt(totalComision)}</div></div>
+      <div class="fin-card highlight"><div class="fc-label">Neto total</div><div class="fc-val g" style="font-size:16px">${fmt(totalBruto-totalComision)}</div></div>
+    </div>
+  </div>`;
+
+  const eventos=[];
   for(const c of cierres){
     const com=parseFloat(c.comision_pct||0);
     if(c.qr_debito>0&&c.fecha_acred_qr)eventos.push({fecha:c.fecha_acred_qr,monto:parseFloat(c.qr_debito)-Math.round(parseFloat(c.qr_debito)*com),tipo:'QR/Débito',terminal:c.terminal,lote:c.nro_lote});
@@ -447,60 +548,55 @@ function renderCalendario(el,cierres){
   const byFecha={};
   for(const e of eventos){if(!byFecha[e.fecha])byFecha[e.fecha]={total:0,items:[]};byFecha[e.fecha].total+=e.monto;byFecha[e.fecha].items.push(e);}
   const fechas=Object.keys(byFecha).sort();
-  let html=`<div class="page-header"><div class="page-title">Calendario de cobros</div></div><div class="cal-list">`;
-  if(!fechas.length)html+=`<div class="empty"><div class="empty-icon">📅</div>Sin cobros proyectados</div>`;
-  for(const f of fechas){
-    const past=f<=hoy;const gr=byFecha[f];
-    const detail=gr.items.map(i=>`TRM ${i.terminal} Lote#${i.lote} (${i.tipo})`).join(' · ');
-    html+=`<div class="cal-row ${past?'past':''}"><div><div class="cal-date">${formatFecha(f)}</div><div class="cal-detail">${detail}</div></div>
-      <div style="display:flex;align-items:center;gap:12px"><div class="cal-monto">${fmt(gr.total)}</div><span class="badge ${past?'green':'yellow'}">${past?'✓ Acreditado':'Pendiente'}</span></div></div>`;
-  }
-  html+='</div>';el.innerHTML=html;
-}
 
-function renderCuenta(el,cierres,retiros,cid){
-  const hoy=todayStr();
-  const acreditado=calcAcreditado(cierres,hoy);
-  const pendiente=calcPendiente(cierres,hoy);
-  const totalRetiros=retiros.reduce((s,r)=>s+parseFloat(r.monto||0),0);
-  const saldo=acreditado-totalRetiros;
-  let html=`<div class="page-header"><div class="page-title">Cuenta corriente</div></div>
-    <div class="cuenta-summary">
-      <div class="sum-card"><div class="s-label">Saldo disponible</div><div class="s-value ${saldo>=0?'green':'red'}">${fmt(saldo)}</div></div>
-      <div class="sum-card"><div class="s-label">Acreditado total</div><div class="s-value">${fmt(acreditado)}</div></div>
-      <div class="sum-card"><div class="s-label">Pendiente de cobro</div><div class="s-value yellow">${fmt(pendiente)}</div></div>
-    </div>
-    <div class="retiro-form">
-      <div class="form-group"><label>Fecha</label><input type="date" id="ret-fecha" value="${hoy}"></div>
-      <div class="form-group"><label>Monto</label><input type="number" id="ret-monto" placeholder="0"></div>
-      <div class="form-group" style="flex:2"><label>Descripción</label><input type="text" id="ret-desc" placeholder="Retiro, pago, etc."></div>
-      <button class="btn-add" onclick="addRetiro('${cid}')">Registrar retiro</button>
-    </div><div class="retiros-list">`;
-  if(!retiros.length)html+=`<div class="empty"><div class="empty-icon">💸</div>Sin retiros registrados</div>`;
-  for(const r of retiros){
-    html+=`<div class="retiro-row"><div class="retiro-info"><div class="r-date">${r.fecha||''}</div><div class="r-desc">${r.descripcion||'Retiro'}</div></div>
-      <div style="display:flex;align-items:center;gap:12px"><div class="retiro-monto">- ${fmt(r.monto)}</div><button class="btn-del" onclick="delRetiro('${r.id}')">×</button></div></div>`;
+  html+=`<div class="fin-section"><div class="fin-section-title">Calendario de acreditaciones</div><div class="timeline">`;
+  if(!fechas.length)html+=`<div class="empty" style="padding:24px"><div class="empty-icon">📅</div>Sin cobros proyectados</div>`;
+  for(const f of fechas){
+    const past=f<hoy;const isToday=f===hoy;
+    const gr=byFecha[f];
+    const detail=gr.items.map(i=>`TRM ${i.terminal} · ${i.tipo}`).join(' / ');
+    const cls=isToday?'today':past?'past':'';
+    const badge=isToday?`<span class="badge b">Hoy</span>`:past?`<span class="badge g">✓</span>`:`<span class="badge y">Pendiente</span>`;
+    html+=`<div class="tl-row ${cls}"><div class="tl-left"><div class="tl-date">${formatFecha(f)}</div><div class="tl-desc">${detail}</div></div>
+      <div class="tl-right"><div class="tl-amt">${fmt(gr.total)}</div>${badge}</div></div>`;
   }
-  html+='</div>';el.innerHTML=html;
+  html+=`</div></div>`;
+
+  html+=`<div class="fin-section"><div class="fin-section-title">Pagos recibidos</div>
+    <div class="pago-form"><div class="pago-form-title">Registrar pago de la cueva</div>
+      <div class="pago-inputs">
+        <div class="field"><label>Fecha</label><input type="date" id="ret-fecha" value="${hoy}"></div>
+        <div class="field"><label>Monto $</label><input type="number" id="ret-monto" placeholder="0"></div>
+        <div class="field" style="flex:2"><label>Descripción</label><input type="text" id="ret-desc" placeholder="Pago cueva, retiro, etc."></div>
+        <button class="btn btn-green" onclick="addRetiro('${cid}')">Registrar</button>
+      </div>
+    </div>
+    <div class="pagos-list">`;
+  if(!retiros.length)html+=`<div class="empty" style="padding:20px"><div class="empty-icon">💸</div>Sin pagos registrados</div>`;
+  for(const r of retiros){
+    html+=`<div class="pago-row"><div class="pr-info"><div class="pr-date">${r.fecha||''}</div><div class="pr-desc">${r.descripcion||'Pago'}</div></div>
+      <div style="display:flex;align-items:center;gap:10px"><div class="pr-monto">- ${fmt(r.monto)}</div><button class="btn btn-danger btn-sm" onclick="delRetiro('${r.id}')">×</button></div></div>`;
+  }
+  html+=`</div></div>`;
+  el.innerHTML=html;
 }
 
 async function addRetiro(cid){
   const fecha=document.getElementById('ret-fecha').value;
   const monto=parseFloat(document.getElementById('ret-monto').value);
-  const desc=document.getElementById('ret-desc').value.trim()||'Retiro';
+  const desc=document.getElementById('ret-desc').value.trim()||'Pago';
   if(!fecha||!monto||monto<=0)return showToast('Completá fecha y monto','err');
-  try{await db.insertRetiro({client_id:cid,fecha,monto,descripcion:desc});showToast('Retiro registrado','ok');renderSection();}
-  catch(e){showToast('Error: '+e.message,'err');}
+  try{await db.insertRetiro({client_id:cid,fecha,monto,descripcion:desc});showToast('Pago registrado','ok');renderSection();}
+  catch(e){showToast(e.message,'err');}
 }
 async function delRetiro(id){
-  if(!confirm('¿Eliminar este retiro?'))return;
-  try{await db.deleteRetiro(id);showToast('Retiro eliminado','ok');renderSection();}
-  catch(e){showToast('Error: '+e.message,'err');}
+  if(!confirm('¿Eliminar?'))return;
+  try{await db.deleteRetiro(id);showToast('Eliminado','ok');renderSection();}
+  catch(e){showToast(e.message,'err');}
 }
 
 function openModal(){document.getElementById('modal-cliente').classList.add('open');}
 function closeModal(){document.getElementById('modal-cliente').classList.remove('open');}
-
 async function saveNewClient(){
   const nombre=document.getElementById('nc-nombre').value.trim();
   const username=document.getElementById('nc-user').value.trim();
@@ -511,42 +607,42 @@ async function saveNewClient(){
   try{
     await db.insertUser({nombre,username,password,role:'client',comision:comision/100,client_id});
     showToast('Cliente creado','ok');closeModal();renderSection();
-  }catch(e){showToast('Error: '+e.message,'err');}
+  }catch(e){showToast(e.message,'err');}
 }
 
-function toBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('Error leyendo archivo'));r.readAsDataURL(file);});}
+function toBase64(file){return new Promise((r,j)=>{const fr=new FileReader();fr.onload=()=>r(fr.result.split(',')[1]);fr.onerror=()=>j(new Error('Error'));fr.readAsDataURL(file);});}
 function todayStr(){return new Date().toISOString().split('T')[0];}
 function addDays(fechaDDMMYYYY,days){
-  if(!fechaDDMMYYYY)return '';
+  if(!fechaDDMMYYYY)return'';
   let d;
   if(fechaDDMMYYYY.includes('/')){const[dd,mm,yyyy]=fechaDDMMYYYY.split('/');d=new Date(parseInt(yyyy),parseInt(mm)-1,parseInt(dd));}
   else d=new Date(fechaDDMMYYYY);
   d.setDate(d.getDate()+days);return d.toISOString().split('T')[0];
 }
-function fmt(n){return '$'+Math.round(n).toLocaleString('es-AR');}
+function fmt(n){return'$'+Math.round(n).toLocaleString('es-AR');}
 function formatFecha(iso){
-  if(!iso)return '—';
+  if(!iso)return'—';
   const[y,m,d]=iso.split('-');
-  const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  return `${d} ${meses[parseInt(m)-1]} ${y}`;
+  const ms=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return`${d} ${ms[parseInt(m)-1]} ${y}`;
 }
 function calcAcreditado(cierres,hoy){
-  let total=0;
+  let t=0;
   for(const c of cierres){
     const com=parseFloat(c.comision_pct||0);
-    if(c.fecha_acred_qr&&c.fecha_acred_qr<=hoy)total+=parseFloat(c.qr_debito||0)-Math.round(parseFloat(c.qr_debito||0)*com);
-    if(c.fecha_acred_credito&&c.fecha_acred_credito<=hoy)total+=parseFloat(c.credito||0)-Math.round(parseFloat(c.credito||0)*com);
+    if(c.fecha_acred_qr&&c.fecha_acred_qr<=hoy)t+=parseFloat(c.qr_debito||0)-Math.round(parseFloat(c.qr_debito||0)*com);
+    if(c.fecha_acred_credito&&c.fecha_acred_credito<=hoy)t+=parseFloat(c.credito||0)-Math.round(parseFloat(c.credito||0)*com);
   }
-  return total;
+  return t;
 }
 function calcPendiente(cierres,hoy){
-  let total=0;
+  let t=0;
   for(const c of cierres){
     const com=parseFloat(c.comision_pct||0);
-    if(c.fecha_acred_qr&&c.fecha_acred_qr>hoy)total+=parseFloat(c.qr_debito||0)-Math.round(parseFloat(c.qr_debito||0)*com);
-    if(c.fecha_acred_credito&&c.fecha_acred_credito>hoy)total+=parseFloat(c.credito||0)-Math.round(parseFloat(c.credito||0)*com);
+    if(c.fecha_acred_qr&&c.fecha_acred_qr>hoy)t+=parseFloat(c.qr_debito||0)-Math.round(parseFloat(c.qr_debito||0)*com);
+    if(c.fecha_acred_credito&&c.fecha_acred_credito>hoy)t+=parseFloat(c.credito||0)-Math.round(parseFloat(c.credito||0)*com);
   }
-  return total;
+  return t;
 }
 function showToast(msg,type='ok'){
   const t=document.getElementById('toast');
