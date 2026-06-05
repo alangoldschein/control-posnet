@@ -6,21 +6,8 @@
 <title>Control Posnet</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
-
   *{box-sizing:border-box;margin:0;padding:0}
-  :root{
-    --bg:#0a0e1a;
-    --surface:#111827;
-    --surface2:#1a2235;
-    --border:#1e2d45;
-    --accent:#00d4ff;
-    --green:#10b981;
-    --yellow:#f59e0b;
-    --red:#ef4444;
-    --text:#e2e8f0;
-    --text2:#94a3b8;
-    --text3:#475569;
-  }
+  :root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#1e2d45;--accent:#00d4ff;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--text:#e2e8f0;--text2:#94a3b8;--text3:#475569;}
   body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh}
   #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
   .login-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px;width:100%;max-width:380px}
@@ -154,8 +141,7 @@
   .toast.ok{border-color:var(--green);color:var(--green)}
   .toast.err{border-color:var(--red);color:var(--red)}
   @keyframes slideIn{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
-  input[type=number]::-webkit-outer-spin-button,
-  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 </style>
 </head>
 <body>
@@ -164,14 +150,8 @@
   <div class="login-box">
     <div class="login-logo">Control</div>
     <div class="login-title">Posnet B</div>
-    <div class="form-group">
-      <label>Usuario</label>
-      <input type="text" id="login-user" placeholder="usuario" autocomplete="off">
-    </div>
-    <div class="form-group">
-      <label>Contraseña</label>
-      <input type="password" id="login-pass" placeholder="••••••••">
-    </div>
+    <div class="form-group"><label>Usuario</label><input type="text" id="login-user" placeholder="usuario" autocomplete="off"></div>
+    <div class="form-group"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••"></div>
     <button class="btn-primary" onclick="doLogin()">Ingresar</button>
     <div class="error-msg" id="login-err"></div>
   </div>
@@ -187,21 +167,11 @@
       <div class="role" id="sb-role"></div>
       <div class="name" id="sb-name"></div>
     </div>
-    <div class="nav-item active" onclick="showSection('cierres')" id="nav-cierres">
-      <span class="nav-icon">📋</span> Cierres
-    </div>
-    <div class="nav-item" onclick="showSection('calendario')" id="nav-calendario">
-      <span class="nav-icon">📅</span> Calendario
-    </div>
-    <div class="nav-item" onclick="showSection('cuenta')" id="nav-cuenta">
-      <span class="nav-icon">💰</span> Cuenta corriente
-    </div>
-    <div class="nav-item" onclick="showSection('clientes')" id="nav-clientes" style="display:none">
-      <span class="nav-icon">👥</span> Clientes
-    </div>
-    <div class="sidebar-bottom">
-      <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
-    </div>
+    <div class="nav-item active" onclick="showSection('cierres')" id="nav-cierres"><span class="nav-icon">📋</span> Cierres</div>
+    <div class="nav-item" onclick="showSection('calendario')" id="nav-calendario"><span class="nav-icon">📅</span> Calendario</div>
+    <div class="nav-item" onclick="showSection('cuenta')" id="nav-cuenta"><span class="nav-icon">💰</span> Cuenta corriente</div>
+    <div class="nav-item" onclick="showSection('clientes')" id="nav-clientes" style="display:none"><span class="nav-icon">👥</span> Clientes</div>
+    <div class="sidebar-bottom"><button class="btn-logout" onclick="doLogout()">Cerrar sesión</button></div>
   </div>
   <div class="main" id="main-content"></div>
 </div>
@@ -209,22 +179,10 @@
 <div class="modal-overlay" id="modal-cliente">
   <div class="modal">
     <div class="modal-title">Nuevo cliente</div>
-    <div class="form-group">
-      <label>Nombre</label>
-      <input type="text" id="nc-nombre" placeholder="Nombre del cliente">
-    </div>
-    <div class="form-group">
-      <label>Usuario</label>
-      <input type="text" id="nc-user" placeholder="usuario">
-    </div>
-    <div class="form-group">
-      <label>Contraseña</label>
-      <input type="text" id="nc-pass" placeholder="contraseña">
-    </div>
-    <div class="form-group">
-      <label>Comisión (%)</label>
-      <input type="number" id="nc-comision" placeholder="9.5" step="0.1">
-    </div>
+    <div class="form-group"><label>Nombre</label><input type="text" id="nc-nombre" placeholder="Nombre del cliente"></div>
+    <div class="form-group"><label>Usuario</label><input type="text" id="nc-user" placeholder="usuario"></div>
+    <div class="form-group"><label>Contraseña</label><input type="text" id="nc-pass" placeholder="contraseña"></div>
+    <div class="form-group"><label>Comisión (%)</label><input type="number" id="nc-comision" placeholder="9.5" step="0.1"></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="btn-save" onclick="saveNewClient()">Guardar</button>
@@ -237,7 +195,6 @@
 <script>
 const SUPABASE_URL = 'https://wwoymrlwsagwqakxxujk.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3b3ltcmx3c2Fnd3Fha3h4dWprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0OTg2NTEsImV4cCI6MjA5MzA3NDY1MX0.f-d6mzXafLNzw6nYM_Ijjq7vNESw_UdRkv8VgxLPuQg';
-const ANTHROPIC_KEY = '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';
 
 let session = null;
 let currentSection = 'cierres';
@@ -247,14 +204,9 @@ async function sb(path, opts={}) {
   const {headers: extraHeaders, ...restOpts} = opts;
   const r = await fetch(SUPABASE_URL+'/rest/v1/'+path, {
     ...restOpts,
-    headers:{
-      'Content-Type':'application/json',
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer '+SUPABASE_KEY,
-      ...(extraHeaders||{})
-    }
+    headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,...(extraHeaders||{})}
   });
-  if (!r.ok) { const e=await r.text(); throw new Error(e); }
+  if (!r.ok){const e=await r.text();throw new Error(e);}
   return r.status===204?null:r.json();
 }
 
@@ -271,36 +223,31 @@ const db = {
 };
 
 async function doLogin() {
-  const u = document.getElementById('login-user').value.trim();
-  const p = document.getElementById('login-pass').value.trim();
-  if (!u||!p) return;
-  try {
-    const rows = await db.getUser(u);
-    if (!rows||!rows[0]) return showErr('Usuario no encontrado');
-    if (rows[0].password !== p) return showErr('Contraseña incorrecta');
-    session = rows[0];
-    startApp();
-  } catch(e) { showErr('Error: '+e.message); }
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value.trim();
+  if(!u||!p)return;
+  try{
+    const rows=await db.getUser(u);
+    if(!rows||!rows[0])return showErr('Usuario no encontrado');
+    if(rows[0].password!==p)return showErr('Contraseña incorrecta');
+    session=rows[0];startApp();
+  }catch(e){showErr('Error: '+e.message);}
 }
 
-function showErr(msg) { document.getElementById('login-err').textContent = msg; }
-document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+function showErr(msg){document.getElementById('login-err').textContent=msg;}
+document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
-function startApp() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('sb-role').textContent = session.role==='admin'?'Administrador':'Cliente';
-  document.getElementById('sb-name').textContent = session.nombre;
-  if (session.role==='admin') {
-    document.getElementById('nav-clientes').style.display='flex';
-    showSection('clientes');
-  } else {
-    showSection('cierres');
-  }
+function startApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('sb-role').textContent=session.role==='admin'?'Administrador':'Cliente';
+  document.getElementById('sb-name').textContent=session.nombre;
+  if(session.role==='admin'){document.getElementById('nav-clientes').style.display='flex';showSection('clientes');}
+  else showSection('cierres');
 }
 
-function doLogout() {
-  session = null; viewingClientId = null;
+function doLogout(){
+  session=null;viewingClientId=null;
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('app').style.display='none';
   document.getElementById('login-user').value='';
@@ -308,247 +255,167 @@ function doLogout() {
   document.getElementById('login-err').textContent='';
 }
 
-function showSection(sec) {
-  currentSection = sec;
-  ['cierres','calendario','cuenta','clientes'].forEach(s => {
-    const el = document.getElementById('nav-'+s);
-    if(el) el.classList.toggle('active', s===sec);
+function showSection(sec){
+  currentSection=sec;
+  ['cierres','calendario','cuenta','clientes'].forEach(s=>{
+    const el=document.getElementById('nav-'+s);
+    if(el)el.classList.toggle('active',s===sec);
   });
   renderSection();
 }
 
-async function renderSection() {
-  const el = document.getElementById('main-content');
-  el.innerHTML = '<div class="empty"><div class="spinner"></div></div>';
-  const cid = viewingClientId || (session.role==='client'?session.client_id:null);
-  try {
-    if (currentSection==='clientes' && session.role==='admin') {
-      await renderClientes(el);
-    } else if (currentSection==='cierres') {
-      const cierres = cid ? await db.getCierres(cid) : [];
-      renderCierres(el, cierres, cid);
-    } else if (currentSection==='calendario') {
-      const cierres = cid ? await db.getCierres(cid) : [];
-      renderCalendario(el, cierres);
-    } else if (currentSection==='cuenta') {
-      const cierres = cid ? await db.getCierres(cid) : [];
-      const retiros = cid ? await db.getRetiros(cid) : [];
-      renderCuenta(el, cierres, retiros, cid);
+async function renderSection(){
+  const el=document.getElementById('main-content');
+  el.innerHTML='<div class="empty"><div class="spinner"></div></div>';
+  const cid=viewingClientId||(session.role==='client'?session.client_id:null);
+  try{
+    if(currentSection==='clientes'&&session.role==='admin')await renderClientes(el);
+    else if(currentSection==='cierres'){const cierres=cid?await db.getCierres(cid):[];renderCierres(el,cierres,cid);}
+    else if(currentSection==='calendario'){const cierres=cid?await db.getCierres(cid):[];renderCalendario(el,cierres);}
+    else if(currentSection==='cuenta'){
+      const cierres=cid?await db.getCierres(cid):[];
+      const retiros=cid?await db.getRetiros(cid):[];
+      renderCuenta(el,cierres,retiros,cid);
     }
-  } catch(e) {
-    el.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>${e.message}</div>`;
-  }
+  }catch(e){el.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div>${e.message}</div>`;}
 }
 
-async function renderClientes(el) {
-  const users = await db.getAllUsers();
-  let html = `
-    <div class="page-header">
-      <div class="header-actions">
-        <div>
-          <div class="page-title">Clientes</div>
-          <div class="page-sub">${users.length} clientes activos</div>
-        </div>
-        <button class="btn-new" onclick="openModal()">+ Nuevo cliente</button>
-      </div>
-    </div>
-    <div class="clients-grid">`;
-  if (!users.length) html += `<div class="empty"><div class="empty-icon">👥</div>No hay clientes aún. Creá el primero.</div>`;
-  for (const u of users) {
-    let cierres=[], retiros=[];
-    try { cierres = await db.getCierres(u.client_id); } catch(e){}
-    try { retiros = await db.getRetiros(u.client_id); } catch(e){}
-    const hoy = todayStr();
-    const acreditado = calcAcreditado(cierres, hoy);
-    const totalRetiros = retiros.reduce((s,r)=>s+parseFloat(r.monto||0),0);
-    const saldo = acreditado - totalRetiros;
-    const pendiente = calcPendiente(cierres, hoy);
-    html += `
-      <div class="client-card" onclick="verCliente('${u.client_id}','${u.nombre}',${u.comision})">
-        <div class="client-info">
-          <div class="client-name">${u.nombre}</div>
-          <div class="client-meta">@${u.username} · comisión ${(u.comision*100).toFixed(1)}%</div>
-        </div>
-        <div class="client-stats">
-          <div class="stat-item">
-            <div class="stat-label">Saldo disponible</div>
-            <div class="stat-value green">${fmt(saldo)}</div>
+async function renderClientes(el){
+  const users=await db.getAllUsers();
+  let html=`<div class="page-header"><div class="header-actions"><div><div class="page-title">Clientes</div><div class="page-sub">${users.length} clientes activos</div></div><button class="btn-new" onclick="openModal()">+ Nuevo cliente</button></div></div><div class="clients-grid">`;
+  if(!users.length)html+=`<div class="empty"><div class="empty-icon">👥</div>No hay clientes aún.</div>`;
+  for(const u of users){
+    let cierres=[],retiros=[];
+    try{cierres=await db.getCierres(u.client_id);}catch(e){}
+    try{retiros=await db.getRetiros(u.client_id);}catch(e){}
+    const hoy=todayStr();
+    const acreditado=calcAcreditado(cierres,hoy);
+    const totalRetiros=retiros.reduce((s,r)=>s+parseFloat(r.monto||0),0);
+    const saldo=acreditado-totalRetiros;
+    const pendiente=calcPendiente(cierres,hoy);
+    html+=`<div class="client-card" onclick="verCliente('${u.client_id}','${u.nombre}',${u.comision})">
+      <div class="client-info"><div class="client-name">${u.nombre}</div><div class="client-meta">@${u.username} · comisión ${(u.comision*100).toFixed(1)}%</div></div>
+      <div class="client-stats">
+        <div class="stat-item"><div class="stat-label">Saldo disponible</div><div class="stat-value green">${fmt(saldo)}</div></div>
+        <div class="stat-item"><div class="stat-label">Pendiente cobro</div><div class="stat-value yellow">${fmt(pendiente)}</div></div>
+        <button class="btn-view">Ver →</button>
+      </div></div>`;
+  }
+  html+='</div>';el.innerHTML=html;
+}
+
+function verCliente(cid,nombre,comision){viewingClientId=cid;session._viewNombre=nombre;session._viewComision=comision;showSection('cierres');}
+
+function renderCierres(el,cierres,cid){
+  const comision=session.role==='client'?session.comision:(session._viewComision||0.095);
+  const nombre=session.role==='client'?session.nombre:session._viewNombre;
+  let html='';
+  if(session.role==='admin'&&viewingClientId){
+    html+=`<button class="back-btn" onclick="goBack()">← Volver a clientes</button>`;
+    html+=`<div class="page-header"><div class="page-title">${nombre}</div><div class="page-sub">Comisión: ${(comision*100).toFixed(1)}%</div></div>`;
+  }else{
+    html+=`<div class="page-header"><div class="page-title">Cierres de lote</div><div class="page-sub">Comisión aplicada: ${(comision*100).toFixed(1)}%</div></div>`;
+  }
+  html+=`<div class="tabs"><button class="tab active" onclick="switchTab(this,'tab-lista')">Lista</button><button class="tab" onclick="switchTab(this,'tab-subir')">+ Subir cierre</button></div><div id="tab-lista">`;
+  if(!cierres.length){html+=`<div class="empty"><div class="empty-icon">📋</div>Sin cierres cargados aún</div>`;}
+  else{
+    html+=`<div class="cierres-list">`;
+    for(const c of cierres){
+      const com=parseFloat(c.comision_monto||0);
+      const neto=parseFloat(c.saldo_neto||0);
+      const hoy=todayStr();
+      const qrOk=c.fecha_acred_qr&&c.fecha_acred_qr<=hoy;
+      const credOk=c.fecha_acred_credito&&c.fecha_acred_credito<=hoy;
+      html+=`<div class="cierre-card">
+        <div class="cierre-header" onclick="toggleCierre('c-${c.id}')">
+          <div class="cierre-left">
+            <div class="cierre-terminal">TRM ${c.terminal||'—'}</div>
+            <div><div class="cierre-id">Lote #${c.nro_lote||'—'} ${c.nro_comercio?'· Com. '+c.nro_comercio:''}</div><div class="cierre-date">${c.fecha||''} ${c.hora||''}</div></div>
           </div>
-          <div class="stat-item">
-            <div class="stat-label">Pendiente cobro</div>
-            <div class="stat-value yellow">${fmt(pendiente)}</div>
+          <div class="cierre-right">
+            <div class="cierre-amount"><div class="label">Neto a cobrar</div><div class="value green">${fmt(neto)}</div></div>
+            <div class="cierre-amount"><div class="label">Comisión</div><div class="value">${fmt(com)}</div></div>
+            <span style="color:var(--text3);font-size:12px">▾</span>
           </div>
-          <button class="btn-view">Ver →</button>
+        </div>
+        <div class="cierre-body" id="c-${c.id}">
+          <div class="detail-grid">
+            <div class="detail-box"><div class="d-label">QR / Débito</div><div class="d-value">${fmt(c.qr_debito||0)}</div></div>
+            <div class="detail-box"><div class="d-label">Crédito</div><div class="d-value">${fmt(c.credito||0)}</div></div>
+            <div class="detail-box"><div class="d-label">Total bruto</div><div class="d-value">${fmt(c.total_pesos||0)}</div></div>
+          </div>
+          <div class="acred-row">
+            <div class="acred-badge ${qrOk?'ok':'pending'}"><div class="dot"></div>QR/Débito · ${c.fecha_acred_qr||'—'} ${qrOk?'✓ Acreditado':'Pendiente'}</div>
+            <div class="acred-badge ${credOk?'ok':'pending'}"><div class="dot"></div>Crédito · ${c.fecha_acred_credito||'—'} ${credOk?'✓ Acreditado':'Pendiente'}</div>
+          </div>
+          <button class="btn-del" onclick="delCierre('${c.id}')">Eliminar cierre</button>
         </div>
       </div>`;
-  }
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-function verCliente(cid, nombre, comision) {
-  viewingClientId = cid;
-  session._viewNombre = nombre;
-  session._viewComision = comision;
-  showSection('cierres');
-}
-
-function renderCierres(el, cierres, cid) {
-  const comision = session.role==='client' ? session.comision : (session._viewComision||0.095);
-  const nombre = session.role==='client' ? session.nombre : session._viewNombre;
-  let html = '';
-  if (session.role==='admin' && viewingClientId) {
-    html += `<button class="back-btn" onclick="goBack()">← Volver a clientes</button>`;
-    html += `<div class="page-header"><div class="page-title">${nombre}</div><div class="page-sub">Comisión: ${(comision*100).toFixed(1)}%</div></div>`;
-  } else {
-    html += `<div class="page-header"><div class="page-title">Cierres de lote</div><div class="page-sub">Comisión aplicada: ${(comision*100).toFixed(1)}%</div></div>`;
-  }
-  html += `
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab(this,'tab-lista')">Lista</button>
-      <button class="tab" onclick="switchTab(this,'tab-subir')">+ Subir cierre</button>
-    </div>
-    <div id="tab-lista">`;
-  if (!cierres.length) {
-    html += `<div class="empty"><div class="empty-icon">📋</div>Sin cierres cargados aún</div>`;
-  } else {
-    html += `<div class="cierres-list">`;
-    for (const c of cierres) {
-      const com = parseFloat(c.comision_monto||0);
-      const neto = parseFloat(c.saldo_neto||0);
-      const hoy = todayStr();
-      const qrOk = c.fecha_acred_qr && c.fecha_acred_qr <= hoy;
-      const credOk = c.fecha_acred_credito && c.fecha_acred_credito <= hoy;
-      html += `
-        <div class="cierre-card">
-          <div class="cierre-header" onclick="toggleCierre('c-${c.id}')">
-            <div class="cierre-left">
-              <div class="cierre-terminal">TRM ${c.terminal||'—'}</div>
-              <div>
-                <div class="cierre-id">Lote #${c.nro_lote||'—'} ${c.nro_comercio?'· Com. '+c.nro_comercio:''}</div>
-                <div class="cierre-date">${c.fecha||''} ${c.hora||''}</div>
-              </div>
-            </div>
-            <div class="cierre-right">
-              <div class="cierre-amount">
-                <div class="label">Neto a cobrar</div>
-                <div class="value green">${fmt(neto)}</div>
-              </div>
-              <div class="cierre-amount">
-                <div class="label">Comisión</div>
-                <div class="value">${fmt(com)}</div>
-              </div>
-              <span style="color:var(--text3);font-size:12px">▾</span>
-            </div>
-          </div>
-          <div class="cierre-body" id="c-${c.id}">
-            <div class="detail-grid">
-              <div class="detail-box"><div class="d-label">QR / Débito</div><div class="d-value">${fmt(c.qr_debito||0)}</div></div>
-              <div class="detail-box"><div class="d-label">Crédito</div><div class="d-value">${fmt(c.credito||0)}</div></div>
-              <div class="detail-box"><div class="d-label">Total bruto</div><div class="d-value">${fmt(c.total_pesos||0)}</div></div>
-            </div>
-            <div class="acred-row">
-              <div class="acred-badge ${qrOk?'ok':'pending'}"><div class="dot"></div>QR/Débito · ${c.fecha_acred_qr||'—'} ${qrOk?'✓ Acreditado':'Pendiente'}</div>
-              <div class="acred-badge ${credOk?'ok':'pending'}"><div class="dot"></div>Crédito · ${c.fecha_acred_credito||'—'} ${credOk?'✓ Acreditado':'Pendiente'}</div>
-            </div>
-            <button class="btn-del" onclick="delCierre('${c.id}')">Eliminar cierre</button>
-          </div>
-        </div>`;
     }
-    html += `</div>`;
+    html+=`</div>`;
   }
-  html += `</div>
-    <div id="tab-subir" style="display:none">
-      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()"
-           ondragover="event.preventDefault();this.classList.add('drag')"
-           ondragleave="this.classList.remove('drag')"
-           ondrop="handleDrop(event)">
-        <div class="upload-icon">📸</div>
-        <div class="upload-text">Hacé clic o arrastrá las fotos de los cierres</div>
-        <div class="upload-sub">JPG, PNG · Podés subir varios a la vez</div>
-      </div>
-      <input type="file" id="file-input" accept="image/*" multiple onchange="handleFiles(this.files,'${cid}',${comision})">
-      <div class="processing-list" id="proc-list"></div>
-    </div>`;
-  el.innerHTML = html;
+  html+=`</div><div id="tab-subir" style="display:none">
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()"
+         ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+      <div class="upload-icon">📸</div>
+      <div class="upload-text">Hacé clic o arrastrá las fotos de los cierres</div>
+      <div class="upload-sub">JPG, PNG · Podés subir varios a la vez</div>
+    </div>
+    <input type="file" id="file-input" accept="image/*" multiple onchange="handleFiles(this.files,'${cid}',${comision})">
+    <div class="processing-list" id="proc-list"></div>
+  </div>`;
+  el.innerHTML=html;
 }
 
-function goBack() {
-  viewingClientId = null;
-  session._viewNombre = null;
-  session._viewComision = null;
-  showSection('clientes');
-}
-
-function toggleCierre(id) {
-  const el = document.getElementById(id);
-  if (el) el.classList.toggle('open');
-}
-
-function switchTab(btn, tabId) {
+function goBack(){viewingClientId=null;session._viewNombre=null;session._viewComision=null;showSection('clientes');}
+function toggleCierre(id){const el=document.getElementById(id);if(el)el.classList.toggle('open');}
+function switchTab(btn,tabId){
   btn.closest('.tabs').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('tab-lista').style.display = tabId==='tab-lista'?'block':'none';
-  document.getElementById('tab-subir').style.display = tabId==='tab-subir'?'block':'none';
+  document.getElementById('tab-lista').style.display=tabId==='tab-lista'?'block':'none';
+  document.getElementById('tab-subir').style.display=tabId==='tab-subir'?'block':'none';
+}
+async function delCierre(id){
+  if(!confirm('¿Eliminar este cierre?'))return;
+  try{await db.deleteCierre(id);showToast('Cierre eliminado','ok');renderSection();}
+  catch(e){showToast('Error: '+e.message,'err');}
 }
 
-async function delCierre(id) {
-  if (!confirm('¿Eliminar este cierre?')) return;
-  try { await db.deleteCierre(id); showToast('Cierre eliminado','ok'); renderSection(); }
-  catch(e) { showToast('Error: '+e.message,'err'); }
-}
-
-function handleDrop(e) {
+function handleDrop(e){
   e.preventDefault();
   document.getElementById('upload-zone').classList.remove('drag');
-  handleFiles(e.dataTransfer.files, viewingClientId||(session.client_id||''), session.role==='client'?session.comision:(session._viewComision||0.095));
+  handleFiles(e.dataTransfer.files,viewingClientId||(session.client_id||''),session.role==='client'?session.comision:(session._viewComision||0.095));
 }
 
-async function handleFiles(files, cid, comision) {
-  const procList = document.getElementById('proc-list');
-  if (!procList) return;
-  for (const file of files) {
-    const itemId = 'proc-'+Date.now()+Math.random();
-    procList.innerHTML += `
-      <div class="proc-item" id="${itemId}">
-        <span class="proc-icon">🖼️</span>
-        <span class="proc-name">${file.name}</span>
-        <span class="proc-status loading"><span class="spinner"></span> Procesando...</span>
-      </div>`;
-    try {
-      const base64 = await toBase64(file);
-      const data = await extractFromImage(base64, file.type);
-      const total = parseFloat(data.totalPesos||0);
-      const comMonto = Math.round(total * comision);
-      const neto = total - comMonto;
-      const fechaAcredQr = data.qrDebito>0 ? addDays(data.fecha,2) : '';
-      const fechaAcredCredito = data.credito>0 ? addDays(data.fecha,18) : '';
-      await db.insertCierre({
-        client_id:cid, terminal:data.terminal||'', fecha:data.fecha||'', hora:data.hora||'',
-        nro_lote:data.nroLote||'', nro_comercio:data.nroComercio||'',
-        qr_debito:data.qrDebito||0, credito:data.credito||0, total_pesos:total,
-        comision_pct:comision, comision_monto:comMonto, saldo_neto:neto,
-        fecha_acred_qr:fechaAcredQr, fecha_acred_credito:fechaAcredCredito,
-      });
+async function handleFiles(files,cid,comision){
+  const procList=document.getElementById('proc-list');
+  if(!procList)return;
+  for(const file of files){
+    const itemId='proc-'+Date.now()+Math.random();
+    procList.innerHTML+=`<div class="proc-item" id="${itemId}"><span class="proc-icon">🖼️</span><span class="proc-name">${file.name}</span><span class="proc-status loading"><span class="spinner"></span> Procesando...</span></div>`;
+    try{
+      const base64=await toBase64(file);
+      const data=await extractFromImage(base64,file.type);
+      const total=parseFloat(data.totalPesos||0);
+      const comMonto=Math.round(total*comision);
+      const neto=total-comMonto;
+      const fechaAcredQr=data.qrDebito>0?addDays(data.fecha,2):'';
+      const fechaAcredCredito=data.credito>0?addDays(data.fecha,18):'';
+      await db.insertCierre({client_id:cid,terminal:data.terminal||'',fecha:data.fecha||'',hora:data.hora||'',nro_lote:data.nroLote||'',nro_comercio:data.nroComercio||'',qr_debito:data.qrDebito||0,credito:data.credito||0,total_pesos:total,comision_pct:comision,comision_monto:comMonto,saldo_neto:neto,fecha_acred_qr:fechaAcredQr,fecha_acred_credito:fechaAcredCredito});
       document.getElementById(itemId).querySelector('.proc-status').className='proc-status ok';
       document.getElementById(itemId).querySelector('.proc-status').textContent='✓ Cargado — '+fmt(neto)+' neto';
-    } catch(e) {
+    }catch(e){
       document.getElementById(itemId).querySelector('.proc-status').className='proc-status err';
       document.getElementById(itemId).querySelector('.proc-status').textContent='Error: '+e.message;
     }
   }
 }
 
-async function extractFromImage(base64, mediaType) {
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+async function extractFromImage(base64,mediaType){
+  const resp=await fetch('/api/claude',{
     method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key': ANTHROPIC_KEY,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body: JSON.stringify({
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
       model:'claude-haiku-4-5-20251001',
       max_tokens:600,
       messages:[{role:'user',content:[
@@ -556,65 +423,48 @@ async function extractFromImage(base64, mediaType) {
         {type:'text',text:`Lee este ticket de cierre de lote de posnet argentino. Responde SOLO con JSON valido sin texto extra ni backticks:
 {"terminal":"numero de terminal","fecha":"DD/MM/YYYY","hora":"HH:MM:SS","nroLote":"numero de lote","nroComercio":"numero si aparece","qrDebito":numero,"credito":numero,"totalPesos":numero}
 - hora: del encabezado del ticket
-- qrDebito: suma VISA DEBITO + MASTERCARD PREPAGO + QR + TRANSFERENCIA INMEDIATA (todo lo que diga debito, prepago o transferencia)
+- qrDebito: suma VISA DEBITO + MASTERCARD PREPAGO + QR + TRANSFERENCIA INMEDIATA
 - credito: MASTERCARD credito + VISA credito + AMEX (excluir debito/prepago/transferencia)
 - totalPesos: TOTALES EN PESOS (linea Co 0XX al final)
 - Numeros sin $ ni puntos de miles. Campos ausentes = 0 o "".`}
       ]}]
     })
   });
-  if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error('API error '+resp.status+': '+err);
-  }
-  const r = await resp.json();
-  if (!r.content||!r.content.length) throw new Error('Respuesta vacía de la API');
-  const text = r.content.map(b=>b.text||'').join('');
+  if(!resp.ok){const err=await resp.text();throw new Error('API error '+resp.status+': '+err);}
+  const r=await resp.json();
+  if(!r.content||!r.content.length)throw new Error('Respuesta vacía de la API');
+  const text=r.content.map(b=>b.text||'').join('');
   return JSON.parse(text.replace(/```json|```/g,'').trim());
 }
 
-function renderCalendario(el, cierres) {
-  const hoy = todayStr();
-  const eventos = [];
-  for (const c of cierres) {
-    const com = parseFloat(c.comision_pct||0);
-    if (c.qr_debito>0 && c.fecha_acred_qr) eventos.push({fecha:c.fecha_acred_qr, monto:parseFloat(c.qr_debito)-Math.round(parseFloat(c.qr_debito)*com), tipo:'QR/Débito', terminal:c.terminal, lote:c.nro_lote});
-    if (c.credito>0 && c.fecha_acred_credito) eventos.push({fecha:c.fecha_acred_credito, monto:parseFloat(c.credito)-Math.round(parseFloat(c.credito)*com), tipo:'Crédito', terminal:c.terminal, lote:c.nro_lote});
+function renderCalendario(el,cierres){
+  const hoy=todayStr();const eventos=[];
+  for(const c of cierres){
+    const com=parseFloat(c.comision_pct||0);
+    if(c.qr_debito>0&&c.fecha_acred_qr)eventos.push({fecha:c.fecha_acred_qr,monto:parseFloat(c.qr_debito)-Math.round(parseFloat(c.qr_debito)*com),tipo:'QR/Débito',terminal:c.terminal,lote:c.nro_lote});
+    if(c.credito>0&&c.fecha_acred_credito)eventos.push({fecha:c.fecha_acred_credito,monto:parseFloat(c.credito)-Math.round(parseFloat(c.credito)*com),tipo:'Crédito',terminal:c.terminal,lote:c.nro_lote});
   }
-  const byFecha = {};
-  for (const e of eventos) {
-    if (!byFecha[e.fecha]) byFecha[e.fecha] = {total:0, items:[]};
-    byFecha[e.fecha].total += e.monto;
-    byFecha[e.fecha].items.push(e);
+  const byFecha={};
+  for(const e of eventos){if(!byFecha[e.fecha])byFecha[e.fecha]={total:0,items:[]};byFecha[e.fecha].total+=e.monto;byFecha[e.fecha].items.push(e);}
+  const fechas=Object.keys(byFecha).sort();
+  let html=`<div class="page-header"><div class="page-title">Calendario de cobros</div></div><div class="cal-list">`;
+  if(!fechas.length)html+=`<div class="empty"><div class="empty-icon">📅</div>Sin cobros proyectados</div>`;
+  for(const f of fechas){
+    const past=f<=hoy;const gr=byFecha[f];
+    const detail=gr.items.map(i=>`TRM ${i.terminal} Lote#${i.lote} (${i.tipo})`).join(' · ');
+    html+=`<div class="cal-row ${past?'past':''}"><div><div class="cal-date">${formatFecha(f)}</div><div class="cal-detail">${detail}</div></div>
+      <div style="display:flex;align-items:center;gap:12px"><div class="cal-monto">${fmt(gr.total)}</div><span class="badge ${past?'green':'yellow'}">${past?'✓ Acreditado':'Pendiente'}</span></div></div>`;
   }
-  const fechas = Object.keys(byFecha).sort();
-  let html = `<div class="page-header"><div class="page-title">Calendario de cobros</div></div><div class="cal-list">`;
-  if (!fechas.length) html += `<div class="empty"><div class="empty-icon">📅</div>Sin cobros proyectados</div>`;
-  for (const f of fechas) {
-    const past = f <= hoy;
-    const gr = byFecha[f];
-    const detail = gr.items.map(i=>`TRM ${i.terminal} Lote#${i.lote} (${i.tipo})`).join(' · ');
-    html += `
-      <div class="cal-row ${past?'past':''}">
-        <div><div class="cal-date">${formatFecha(f)}</div><div class="cal-detail">${detail}</div></div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <div class="cal-monto">${fmt(gr.total)}</div>
-          <span class="badge ${past?'green':'yellow'}">${past?'✓ Acreditado':'Pendiente'}</span>
-        </div>
-      </div>`;
-  }
-  html += '</div>';
-  el.innerHTML = html;
+  html+='</div>';el.innerHTML=html;
 }
 
-function renderCuenta(el, cierres, retiros, cid) {
-  const hoy = todayStr();
-  const acreditado = calcAcreditado(cierres, hoy);
-  const pendiente = calcPendiente(cierres, hoy);
-  const totalRetiros = retiros.reduce((s,r)=>s+parseFloat(r.monto||0),0);
-  const saldo = acreditado - totalRetiros;
-  let html = `
-    <div class="page-header"><div class="page-title">Cuenta corriente</div></div>
+function renderCuenta(el,cierres,retiros,cid){
+  const hoy=todayStr();
+  const acreditado=calcAcreditado(cierres,hoy);
+  const pendiente=calcPendiente(cierres,hoy);
+  const totalRetiros=retiros.reduce((s,r)=>s+parseFloat(r.monto||0),0);
+  const saldo=acreditado-totalRetiros;
+  let html=`<div class="page-header"><div class="page-title">Cuenta corriente</div></div>
     <div class="cuenta-summary">
       <div class="sum-card"><div class="s-label">Saldo disponible</div><div class="s-value ${saldo>=0?'green':'red'}">${fmt(saldo)}</div></div>
       <div class="sum-card"><div class="s-label">Acreditado total</div><div class="s-value">${fmt(acreditado)}</div></div>
@@ -625,103 +475,82 @@ function renderCuenta(el, cierres, retiros, cid) {
       <div class="form-group"><label>Monto</label><input type="number" id="ret-monto" placeholder="0"></div>
       <div class="form-group" style="flex:2"><label>Descripción</label><input type="text" id="ret-desc" placeholder="Retiro, pago, etc."></div>
       <button class="btn-add" onclick="addRetiro('${cid}')">Registrar retiro</button>
-    </div>
-    <div class="retiros-list">`;
-  if (!retiros.length) html += `<div class="empty"><div class="empty-icon">💸</div>Sin retiros registrados</div>`;
-  for (const r of retiros) {
-    html += `
-      <div class="retiro-row">
-        <div class="retiro-info"><div class="r-date">${r.fecha||''}</div><div class="r-desc">${r.descripcion||'Retiro'}</div></div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <div class="retiro-monto">- ${fmt(r.monto)}</div>
-          <button class="btn-del" onclick="delRetiro('${r.id}')">×</button>
-        </div>
-      </div>`;
+    </div><div class="retiros-list">`;
+  if(!retiros.length)html+=`<div class="empty"><div class="empty-icon">💸</div>Sin retiros registrados</div>`;
+  for(const r of retiros){
+    html+=`<div class="retiro-row"><div class="retiro-info"><div class="r-date">${r.fecha||''}</div><div class="r-desc">${r.descripcion||'Retiro'}</div></div>
+      <div style="display:flex;align-items:center;gap:12px"><div class="retiro-monto">- ${fmt(r.monto)}</div><button class="btn-del" onclick="delRetiro('${r.id}')">×</button></div></div>`;
   }
-  html += '</div>';
-  el.innerHTML = html;
+  html+='</div>';el.innerHTML=html;
 }
 
-async function addRetiro(cid) {
-  const fecha = document.getElementById('ret-fecha').value;
-  const monto = parseFloat(document.getElementById('ret-monto').value);
-  const desc = document.getElementById('ret-desc').value.trim()||'Retiro';
-  if (!fecha||!monto||monto<=0) return showToast('Completá fecha y monto','err');
-  try { await db.insertRetiro({client_id:cid,fecha,monto,descripcion:desc}); showToast('Retiro registrado','ok'); renderSection(); }
-  catch(e) { showToast('Error: '+e.message,'err'); }
+async function addRetiro(cid){
+  const fecha=document.getElementById('ret-fecha').value;
+  const monto=parseFloat(document.getElementById('ret-monto').value);
+  const desc=document.getElementById('ret-desc').value.trim()||'Retiro';
+  if(!fecha||!monto||monto<=0)return showToast('Completá fecha y monto','err');
+  try{await db.insertRetiro({client_id:cid,fecha,monto,descripcion:desc});showToast('Retiro registrado','ok');renderSection();}
+  catch(e){showToast('Error: '+e.message,'err');}
+}
+async function delRetiro(id){
+  if(!confirm('¿Eliminar este retiro?'))return;
+  try{await db.deleteRetiro(id);showToast('Retiro eliminado','ok');renderSection();}
+  catch(e){showToast('Error: '+e.message,'err');}
 }
 
-async function delRetiro(id) {
-  if (!confirm('¿Eliminar este retiro?')) return;
-  try { await db.deleteRetiro(id); showToast('Retiro eliminado','ok'); renderSection(); }
-  catch(e) { showToast('Error: '+e.message,'err'); }
-}
+function openModal(){document.getElementById('modal-cliente').classList.add('open');}
+function closeModal(){document.getElementById('modal-cliente').classList.remove('open');}
 
-function openModal() { document.getElementById('modal-cliente').classList.add('open'); }
-function closeModal() { document.getElementById('modal-cliente').classList.remove('open'); }
-
-async function saveNewClient() {
-  const nombre = document.getElementById('nc-nombre').value.trim();
-  const username = document.getElementById('nc-user').value.trim();
-  const password = document.getElementById('nc-pass').value.trim();
-  const comision = parseFloat(document.getElementById('nc-comision').value)||9.5;
-  if (!nombre||!username||!password) return showToast('Completá todos los campos','err');
-  const client_id = 'c_'+Date.now();
-  try {
+async function saveNewClient(){
+  const nombre=document.getElementById('nc-nombre').value.trim();
+  const username=document.getElementById('nc-user').value.trim();
+  const password=document.getElementById('nc-pass').value.trim();
+  const comision=parseFloat(document.getElementById('nc-comision').value)||9.5;
+  if(!nombre||!username||!password)return showToast('Completá todos los campos','err');
+  const client_id='c_'+Date.now();
+  try{
     await db.insertUser({nombre,username,password,role:'client',comision:comision/100,client_id});
-    showToast('Cliente creado','ok'); closeModal(); renderSection();
-  } catch(e) { showToast('Error: '+e.message,'err'); }
+    showToast('Cliente creado','ok');closeModal();renderSection();
+  }catch(e){showToast('Error: '+e.message,'err');}
 }
 
-function toBase64(file) {
-  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=()=>rej(new Error('Error leyendo archivo')); r.readAsDataURL(file); });
-}
-
-function todayStr() { return new Date().toISOString().split('T')[0]; }
-
-function addDays(fechaDDMMYYYY, days) {
-  if (!fechaDDMMYYYY) return '';
+function toBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('Error leyendo archivo'));r.readAsDataURL(file);});}
+function todayStr(){return new Date().toISOString().split('T')[0];}
+function addDays(fechaDDMMYYYY,days){
+  if(!fechaDDMMYYYY)return '';
   let d;
-  if (fechaDDMMYYYY.includes('/')) {
-    const [dd,mm,yyyy] = fechaDDMMYYYY.split('/');
-    d = new Date(parseInt(yyyy), parseInt(mm)-1, parseInt(dd));
-  } else { d = new Date(fechaDDMMYYYY); }
-  d.setDate(d.getDate()+days);
-  return d.toISOString().split('T')[0];
+  if(fechaDDMMYYYY.includes('/')){const[dd,mm,yyyy]=fechaDDMMYYYY.split('/');d=new Date(parseInt(yyyy),parseInt(mm)-1,parseInt(dd));}
+  else d=new Date(fechaDDMMYYYY);
+  d.setDate(d.getDate()+days);return d.toISOString().split('T')[0];
 }
-
-function fmt(n) { return '$'+Math.round(n).toLocaleString('es-AR'); }
-
-function formatFecha(iso) {
-  if (!iso) return '—';
-  const [y,m,d] = iso.split('-');
+function fmt(n){return '$'+Math.round(n).toLocaleString('es-AR');}
+function formatFecha(iso){
+  if(!iso)return '—';
+  const[y,m,d]=iso.split('-');
   const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   return `${d} ${meses[parseInt(m)-1]} ${y}`;
 }
-
-function calcAcreditado(cierres, hoy) {
-  let total = 0;
-  for (const c of cierres) {
-    const com = parseFloat(c.comision_pct||0);
-    if (c.fecha_acred_qr && c.fecha_acred_qr<=hoy) total += parseFloat(c.qr_debito||0) - Math.round(parseFloat(c.qr_debito||0)*com);
-    if (c.fecha_acred_credito && c.fecha_acred_credito<=hoy) total += parseFloat(c.credito||0) - Math.round(parseFloat(c.credito||0)*com);
+function calcAcreditado(cierres,hoy){
+  let total=0;
+  for(const c of cierres){
+    const com=parseFloat(c.comision_pct||0);
+    if(c.fecha_acred_qr&&c.fecha_acred_qr<=hoy)total+=parseFloat(c.qr_debito||0)-Math.round(parseFloat(c.qr_debito||0)*com);
+    if(c.fecha_acred_credito&&c.fecha_acred_credito<=hoy)total+=parseFloat(c.credito||0)-Math.round(parseFloat(c.credito||0)*com);
   }
   return total;
 }
-
-function calcPendiente(cierres, hoy) {
-  let total = 0;
-  for (const c of cierres) {
-    const com = parseFloat(c.comision_pct||0);
-    if (c.fecha_acred_qr && c.fecha_acred_qr>hoy) total += parseFloat(c.qr_debito||0) - Math.round(parseFloat(c.qr_debito||0)*com);
-    if (c.fecha_acred_credito && c.fecha_acred_credito>hoy) total += parseFloat(c.credito||0) - Math.round(parseFloat(c.credito||0)*com);
+function calcPendiente(cierres,hoy){
+  let total=0;
+  for(const c of cierres){
+    const com=parseFloat(c.comision_pct||0);
+    if(c.fecha_acred_qr&&c.fecha_acred_qr>hoy)total+=parseFloat(c.qr_debito||0)-Math.round(parseFloat(c.qr_debito||0)*com);
+    if(c.fecha_acred_credito&&c.fecha_acred_credito>hoy)total+=parseFloat(c.credito||0)-Math.round(parseFloat(c.credito||0)*com);
   }
   return total;
 }
-
-function showToast(msg, type='ok') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast show '+type;
+function showToast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+type;
   setTimeout(()=>t.classList.remove('show'),3000);
 }
 </script>
