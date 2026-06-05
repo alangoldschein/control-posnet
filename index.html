@@ -96,7 +96,6 @@
   .cf-monto{grid-column:span 3;background:linear-gradient(135deg,var(--green-light),#dcfce7);border:1.5px solid var(--green-border);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
   .cf-monto-left .cf-monto-label{font-size:12px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:.5px}
   .cf-monto-detail{font-size:12px;color:var(--text2);margin-top:4px}
-  .cf-monto-detail span{font-family:var(--mono);font-weight:600}
   .cf-neto{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--green)}
   .confirm-actions{display:flex;gap:8px;justify-content:flex-end;align-items:center}
   .cierre-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:var(--shadow)}
@@ -355,9 +354,9 @@ function renderCierres(el,cierres,cid){
   let html='';
   if(session.role==='admin'&&viewingClientId){
     html+=`<button class="back-btn" onclick="goBack()">← Volver a clientes</button>
-    <div class="ph"><div class="ph-top"><div><div class="ph-title">📋 ${nombre}</div><div class="ph-sub">Comisión: ${(comision*100).toFixed(1)}% · ${cierres.length} cierres</div></div><button class="btn btn-ghost btn-sm" onclick="exportExcel()" style="gap:6px">⬇ Exportar Excel</button></div></div>`;
+    <div class="ph"><div class="ph-top"><div><div class="ph-title">📋 ${nombre}</div><div class="ph-sub">Comisión: ${(comision*100).toFixed(1)}% · ${cierres.length} cierres</div></div><button class="btn btn-ghost btn-sm" onclick="exportExcel()">⬇ Exportar Excel</button></div></div>`;
   }else{
-    html+=`<div class="ph"><div class="ph-top"><div><div class="ph-title">📋 Cierres de lote</div><div class="ph-sub">Comisión: ${(comision*100).toFixed(1)}%</div></div><button class="btn btn-ghost btn-sm" onclick="exportExcel()" style="gap:6px">⬇ Exportar Excel</button></div></div>`;
+    html+=`<div class="ph"><div class="ph-top"><div><div class="ph-title">📋 Cierres de lote</div><div class="ph-sub">Comisión: ${(comision*100).toFixed(1)}%</div></div><button class="btn btn-ghost btn-sm" onclick="exportExcel()">⬇ Exportar Excel</button></div></div>`;
   }
   html+=`<div class="tabs">
     <button class="tab active" onclick="switchTab(this,'tab-lista')">Lista de cierres</button>
@@ -489,12 +488,12 @@ function renderConfirmCard(div,data,cid,comision,filename){
         <input class="cf-input" id="${div.id}-lote" value="${data.nroLote||''}" placeholder="—">
       </div>
       <div class="cf-field" style="border-color:#bfdbfe;background:#eff6ff">
-        <div class="cf-label" style="color:var(--blue)">QR / Débito $</div>
-        <input class="cf-input" type="number" id="${div.id}-qr" value="${qr}" oninput="recalcTotal('${div.id}',${comision})">
+        <div class="cf-label" style="color:var(--blue)">QR / Débito</div>
+        <div style="display:flex;align-items:center;gap:4px"><span style="font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text2)">$</span><input class="cf-input" type="number" id="${div.id}-qr" value="${qr}" oninput="recalcTotal('${div.id}',${comision})" style="flex:1"></div>
       </div>
       <div class="cf-field" style="border-color:#bfdbfe;background:#eff6ff">
-        <div class="cf-label" style="color:var(--blue)">Crédito $</div>
-        <input class="cf-input" type="number" id="${div.id}-cred" value="${cred}" oninput="recalcTotal('${div.id}',${comision})">
+        <div class="cf-label" style="color:var(--blue)">Crédito</div>
+        <div style="display:flex;align-items:center;gap:4px"><span style="font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text2)">$</span><input class="cf-input" type="number" id="${div.id}-cred" value="${cred}" oninput="recalcTotal('${div.id}',${comision})" style="flex:1"></div>
       </div>
       <div class="cf-monto">
         <div class="cf-monto-left">
@@ -616,13 +615,13 @@ function renderFinanciero(el,cierres,retiros,cid){
     </div>
   </div>`;
 
-  const pctCom=totalBruto>0?Math.round((totalComision/totalBruto)*100):0;
+  const pctCom=totalBruto>0?((totalComision/totalBruto)*100):0;
   const pctNeto=100-pctCom;
   html+=`<div class="comision-bar">
     <div class="comision-bar-title">Desglose de comisiones</div>
     <div class="comision-bar-row">
-      <div class="cb-bruto" style="width:${pctNeto}%">Neto ${pctNeto}%</div>
-      <div class="cb-comision" style="width:${pctCom}%">Comisión ${pctCom}%</div>
+      <div class="cb-bruto" style="width:${pctNeto.toFixed(1)}%">Neto ${pctNeto.toFixed(1)}%</div>
+      <div class="cb-comision" style="width:${pctCom.toFixed(1)}%">Comisión ${pctCom.toFixed(1)}%</div>
     </div>
     <div class="comision-nums">
       <div class="cn-item"><div class="cn-label">Total bruto</div><div class="cn-val b">${fmt(totalBruto)}</div></div>
@@ -651,7 +650,7 @@ function renderFinanciero(el,cierres,retiros,cid){
     const isToday=f===hoy;
     const isNext=f===nextPending;
     const gr=byFecha[f];
-    const detail=gr.items.map(i=>`TRM ${i.terminal} · ${i.tipo}`).join(' &nbsp;/&nbsp; ');
+    const detail=gr.items.map(i=>`TRM ${i.terminal} · ${i.tipo}`).join(' / ');
     const cls=isToday?'today':isNext?'next':past?'past':'';
     const pill=isToday?`<span class="pill b">Hoy</span>`:past?`<span class="pill g">✓ Acreditado</span>`:`<span class="pill y">Pendiente</span>`;
     html+=`<div class="tl-row ${cls}">
@@ -661,7 +660,7 @@ function renderFinanciero(el,cierres,retiros,cid){
   }
   html+=`</div><div class="divider"></div>`;
 
-  html+=`<div class="fin-section-title">💸 Pagos recibidos de la cueva</div>
+  html+=`<div class="fin-section-title">💸 Pagos</div>
   <div class="pago-form">
     <div class="pago-form-title">Registrar nuevo pago</div>
     <div class="pago-inputs">
@@ -689,7 +688,7 @@ function renderFinanciero(el,cierres,retiros,cid){
 async function addRetiro(cid){
   const fecha=document.getElementById('ret-fecha').value;
   const monto=parseFloat(document.getElementById('ret-monto').value);
-  const desc=document.getElementById('ret-desc').value.trim()||'Pago cueva';
+  const desc=document.getElementById('ret-desc').value.trim()||'Pago';
   if(!fecha||!monto||monto<=0)return showToast('Completá fecha y monto','err');
   try{await db.insertRetiro({client_id:cid,fecha,monto,descripcion:desc});showToast('✓ Pago registrado','ok');renderSection();}
   catch(e){showToast(e.message,'err');}
@@ -755,13 +754,7 @@ function exportExcel(){
   db.getCierres(cid).then(cierres=>{
     const rows=[['Terminal','Fecha','Hora','N° Lote','N° Comercio','QR/Débito','Crédito','Total Bruto','Comisión %','Comisión $','Neto a Cobrar','Fecha Acred. QR/Déb','Fecha Acred. Crédito']];
     for(const c of cierres){
-      rows.push([
-        c.terminal||'',c.fecha||'',c.hora||'',c.nro_lote||'',c.nro_comercio||'',
-        parseFloat(c.qr_debito||0),parseFloat(c.credito||0),parseFloat(c.total_pesos||0),
-        ((parseFloat(c.comision_pct||0))*100).toFixed(1)+'%',
-        parseFloat(c.comision_monto||0),parseFloat(c.saldo_neto||0),
-        c.fecha_acred_qr||'',c.fecha_acred_credito||''
-      ]);
+      rows.push([c.terminal||'',c.fecha||'',c.hora||'',c.nro_lote||'',c.nro_comercio||'',parseFloat(c.qr_debito||0),parseFloat(c.credito||0),parseFloat(c.total_pesos||0),((parseFloat(c.comision_pct||0))*100).toFixed(1)+'%',parseFloat(c.comision_monto||0),parseFloat(c.saldo_neto||0),c.fecha_acred_qr||'',c.fecha_acred_credito||'']);
     }
     rows.push([]);
     const totQr=cierres.reduce((s,c)=>s+parseFloat(c.qr_debito||0),0);
@@ -771,10 +764,7 @@ function exportExcel(){
     const totNeto=cierres.reduce((s,c)=>s+parseFloat(c.saldo_neto||0),0);
     rows.push(['TOTALES','','','','',totQr,totCred,totBruto,'',totCom,totNeto,'','']);
     const bom='\uFEFF';
-    const csv=bom+rows.map(r=>r.map(v=>{
-      const s=String(v===null||v===undefined?'':v);
-      return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;
-    }).join(',')).join('\n');
+    const csv=bom+rows.map(r=>r.map(v=>{const s=String(v===null||v===undefined?'':v);return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;}).join(',')).join('\n');
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
